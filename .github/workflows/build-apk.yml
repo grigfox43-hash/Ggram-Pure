@@ -42,12 +42,6 @@ jobs:
           find TMessagesProj_AppStandalone/build/outputs/apk -type f -name "*.apk" -exec cp {} output_apk/Ggram-Full-Telegram-v1.0.0.apk \;
           ls -la output_apk/
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Ggram-Full-Telegram-v1.0.0
-          path: output_apk/*.apk
-          retention-days: 30
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
