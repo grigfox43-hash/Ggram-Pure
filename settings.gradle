@@ -1,16 +1,8 @@
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-rootProject.name = "Ggram-Pure"
-include ':app'
+include ':TMessagesProj'
+include ':TMessagesProj_App'
+include ':TMessagesProj_AppHuawei'
+include ':TMessagesProj_AppHockeyApp'
+include ':TMessagesProj_AppStandalone'
+include ':TMessagesProj_AppTests'
+include ':jlatexmath'
+project(':jlatexmath').projectDir = file('TMessagesProj/lib/jlatexmath/jlatexmath')
