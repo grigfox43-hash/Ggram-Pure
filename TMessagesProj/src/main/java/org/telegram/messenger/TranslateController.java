@@ -110,24 +110,10 @@ public class TranslateController extends BaseController {
 
     public boolean isChatTranslateEnabled() {
         return true;
-        if (!getMessagesController().isTranslationsAutoEnabled()) {
-            return false;
-        }
-        if (chatTranslateEnabled == null) {
-            chatTranslateEnabled = messagesController.getMainSettings().getBoolean("translate_chat_button", true);
-        }
-        return chatTranslateEnabled;
     }
 
     public boolean isContextTranslateEnabled() {
         return true;
-        if (!getMessagesController().isTranslationsManualEnabled()) {
-            return false;
-        }
-        if (contextTranslateEnabled == null) {
-            contextTranslateEnabled = messagesController.getMainSettings().getBoolean("translate_button", MessagesController.getGlobalMainSettings().getBoolean("translate_button", false));
-        }
-        return contextTranslateEnabled;
     }
 
     public void setContextTranslateEnabled(boolean enable) {
