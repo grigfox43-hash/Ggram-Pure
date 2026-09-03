@@ -2083,12 +2083,8 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         if (messages == null || messages.isEmpty()) {
             return 0;
         }
-        if (org.ggram.config.GgramConfig.isForwardNoAuthors) {
-            forwardFromMyName = true;
-        }
-        if (org.ggram.config.GgramConfig.isForwardNoCaptions) {
-            hideCaption = true;
-        }
+        final boolean fForwardFromMyName = org.ggram.config.GgramConfig.isForwardNoAuthors || forwardFromMyName;
+        final boolean fHideCaption = org.ggram.config.GgramConfig.isForwardNoCaptions || hideCaption;
         int sendResult = 0;
         long myId = getUserConfig().getClientUserId();
         boolean isChannel = false;
@@ -2113,7 +2109,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             }
             if (currentPayStars != payStars) {
                 AlertsCreator.ensurePaidMessageConfirmation(currentAccount, peer, Math.max(1, messages.size()), newPayStars -> {
-                    sendMessage(messages, peer, forwardFromMyName, hideCaption, notify, scheduleDate, scheduleRepeatPeriod, replyToTopMsg, video_timestamp, newPayStars, monoForumPeerId, suggestionParams);
+                    sendMessage(messages, peer, fForwardFromMyName, fHideCaption, notify, scheduleDate, scheduleRepeatPeriod, replyToTopMsg, video_timestamp, newPayStars, monoForumPeerId, suggestionParams);
                 });
                 return 0;
             }
@@ -2241,7 +2237,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                 }
 
                 final TLRPC.Message newMsg = new TLRPC.TL_message();
-                if (!forwardFromMyName) {
+                if (!fForwardFromMyName) {
                     boolean forwardFromSaved = msgObj.getDialogId() == myId && msgObj.isFromUser() && msgObj.messageOwner.from_id.user_id == myId;
                     if (msgObj.isForwarded()) {
                         newMsg.fwd_from = new TLRPC.TL_messageFwdHeader();
@@ -2342,7 +2338,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
                     newMsg.flags |= 8388608;
                 }
-                if (!hideCaption || newMsg.media == null) {
+                if (!fHideCaption || newMsg.media == null) {
                     newMsg.message = msgObj.messageOwner.message;
                 }
                 if (msgObj.messageOwner.rich_message != null) {
@@ -2572,8 +2568,8 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                     }
                     req.random_id = randomIds;
                     req.id = ids;
-                    req.drop_author = forwardFromMyName;
-                    req.drop_media_captions = hideCaption;
+                    req.drop_author = fForwardFromMyName;
+                    req.drop_media_captions = fHideCaption;
                     req.with_my_score = messages.size() == 1 && messages.get(0).messageOwner.with_my_score;
                     req.from_ephemeral = fwdEphemeral;
                     if (video_timestamp >= 0) {
