@@ -8993,7 +8993,7 @@ public class Theme {
             return 0xFF0A0F0C;
         }
         // Accents: #01ba53 (Neon emerald green)
-        if (key == key_actionBarDefaultIcon || key == key_chats_menuItemIcon || key == key_chats_actionBackground || key == key_chats_unreadCounter || key == key_switchTrackChecked || key == key_switch2TrackChecked || key == key_checkboxCheck || key == key_dialogButton || key == key_dialogRoundCheckBoxCheck || key == key_radioBackgroundChecked || key == key_featuredStickers_addButton || key == key_profile_actionBackground || key == key_chat_messagePanelSend || key == key_chat_messagePanelIcons || key == key_chat_attachSendButton || key == key_player_progress || key == key_fastScrollActive || key == key_windowBackgroundWhiteBlueText || key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 || key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteValueText || key == key_chat_recordedVoiceDot || key == key_chat_messageLinkOut || key == key_chat_messageLinkIn) {
+        if (key == key_actionBarDefaultIcon || key == key_chats_menuItemIcon || key == key_chats_actionBackground || key == key_chats_unreadCounter || key == key_switchTrackChecked || key == key_switch2TrackChecked || key == key_checkboxCheck || key == key_dialogButton || key == key_dialogRoundCheckBoxCheck || key == key_radioBackgroundChecked || key == key_featuredStickers_addButton || key == key_profile_actionBackground || key == key_chat_messagePanelSend || key == key_chat_messagePanelIcons || key == key_player_progress || key == key_fastScrollActive || key == key_windowBackgroundWhiteBlueText || key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 || key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteValueText || key == key_chat_recordedVoiceDot || key == key_chat_messageLinkOut || key == key_chat_messageLinkIn) {
             return 0xFF01BA53;
         }
         // Chat bubbles: #0E381F (Emerald out) & #121814 (Obsidian in)
@@ -9013,7 +9013,7 @@ public class Theme {
             return 0xFF050505;
         }
         // High contrast texts
-        if (key == key_actionBarDefaultTitle || key == key_chats_menuItemText || key == key_chat_outText || key == key_chat_inText || key == key_windowBackgroundWhiteBlackText || key == key_dialogTextBlack || key == key_profile_title || key == key_chats_name) {
+        if (key == key_actionBarDefaultTitle || key == key_chats_menuItemText || key == key_chat_messageTextOut || key == key_chat_messageTextIn || key == key_windowBackgroundWhiteBlackText || key == key_dialogTextBlack || key == key_profile_title || key == key_chats_name) {
             return 0xFFFFFFFF;
         }
         if (key == key_chat_outTimeText) {
