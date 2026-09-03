@@ -6699,6 +6699,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isChatNoForwards(TLRPC.Chat chat) {
+        if (org.ggram.config.GgramConfig.isNoForwardsBypassEnabled) return false;
         if (chat == null) {
             return false;
         }
@@ -6716,6 +6717,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isPeerNoForwards(long dialogId) {
+        if (org.ggram.config.GgramConfig.isNoForwardsBypassEnabled) return false;
         return dialogId > 0 ? isUserNoForwards(dialogId) : isChatNoForwards(-dialogId);
     }
 
@@ -6724,6 +6726,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isUserNoForwards(TLRPC.UserFull userFull) {
+        if (org.ggram.config.GgramConfig.isNoForwardsBypassEnabled) return false;
         if (userFull == null) {
             return false;
         }
@@ -9357,6 +9360,10 @@ public class MessagesController extends BaseController implements NotificationCe
                         MessageObject obj = dialogMessagesByIds.get(id);
                         if (obj != null) {
                             obj.deleted = true;
+                            if (org.ggram.config.GgramConfig.isAntiRecallDeleted) {
+                                String txt = obj.messageText != null ? obj.messageText.toString() : "";
+                                org.ggram.antirecall.GgramAntiRecallManager.onMessageDeleted(dialogId, id, txt, null);
+                            }
                         }
                     }
                 } else {
@@ -19429,6 +19436,14 @@ public class MessagesController extends BaseController implements NotificationCe
                         message.out = true;
                     }
                 }
+                if (org.ggram.config.GgramConfig.isAntiRecallEdits && message != null) {
+                    MessageObject prev = dialogMessagesByIds.get(message.id);
+                    String oldText = prev != null && prev.messageText != null ? prev.messageText.toString() : "";
+                    String newText = message.message != null ? message.message : "";
+                    if (!oldText.isEmpty() && !oldText.equals(newText)) {
+                        org.ggram.antirecall.GgramAntiRecallManager.onMessageEdited(message.id, oldText, newText);
+                    }
+                }
                 if (!message.out) {
                     long from_id = DialogObject.getPeerDialogId(message.from_id);
                     if (from_id == clientUserId) {
@@ -22572,6 +22587,8 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public String getRestrictionReason(ArrayList<TLRPC.RestrictionReason> reasons) {
+        // [Ggram Unrestricted Access] Bypass channel/group/community bans and restrictions
+        if (true) return null;
         if (reasons.isEmpty()) {
             return null;
         }
@@ -22591,6 +22608,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isSensitive(ArrayList<TLRPC.RestrictionReason> reasons) {
+        if (true) return false;
         if (reasons == null || reasons.isEmpty()) {
             return false;
         }

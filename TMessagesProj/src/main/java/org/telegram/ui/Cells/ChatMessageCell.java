@@ -18488,6 +18488,14 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         } else {
             currentTimeString = timeString;
         }
+        if (currentMessageObject != null) {
+            long mid = currentMessageObject.getId();
+            if (org.ggram.antirecall.GgramAntiRecallManager.isMessageDeleted(mid) || currentMessageObject.deleted) {
+                currentTimeString = TextUtils.concat("[Удалено] ", currentTimeString);
+            } else if (!org.ggram.antirecall.GgramAntiRecallManager.getEditHistory(mid).isEmpty() || currentMessageObject.isEdited()) {
+                currentTimeString = TextUtils.concat("[Изм.] ", currentTimeString);
+            }
+        }
         if (currentMessageObject.isStakedDice()) {
             currentTimeString = TextUtils.concat("💎", StarsIntroActivity.formatTON(currentMessageObject.getStakedDiceAmount()), "  ", currentTimeString);
             currentTimeString = StarsIntroActivity.replaceDiamond(currentTimeString, 0.55f, null, 0, dp(-.33f), 1.05f);

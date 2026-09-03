@@ -1853,6 +1853,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     }
 
     public void sendScreenshotMessage(TLRPC.User user, int messageId, TLRPC.Message resendMessage) {
+        if (org.ggram.media.GgramMediaGrabber.shouldSuppressScreenshotNotification()) {
+            return; // [Ggram Stealth: Never send screenshot notifications]
+        }
         if (user == null || messageId == 0 || user.id == getUserConfig().getClientUserId()) {
             return;
         }

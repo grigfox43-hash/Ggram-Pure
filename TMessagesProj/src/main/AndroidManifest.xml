@@ -395,6 +395,10 @@
                   android:excludeFromRecents="true"
                 android:theme="@style/Theme.TMessages.TransparentWithAlerts"/>
 
+        <activity android:name="org.ggram.ui.diff.GgramDiffActivity"
+                  android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+                  android:theme="@style/Theme.TMessages"/>
+
         <receiver
             android:name=".AutoMessageHeardReceiver"
             android:exported="false">

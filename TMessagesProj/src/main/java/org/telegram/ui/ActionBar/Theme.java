@@ -6424,7 +6424,7 @@ public class Theme {
     }
 
     public static boolean isCurrentThemeDark() {
-        return currentTheme.isDark();
+        return true; // [Ggram] Always Dark Obsidian
     }
 
     public static ThemeInfo getActiveTheme() {
@@ -8984,7 +8984,55 @@ public class Theme {
         return getColor(key, isDefault, false);
     }
 
+        public static int getGgramColor(int key) {
+        // Backgrounds: #050505 (Obsidian black) and #0A0F0C (Surface)
+        if (key == key_windowBackgroundWhite || key == key_windowBackgroundGray || key == key_actionBarDefault || key == key_chats_menuBackground || key == key_chat_wallpaper || key == key_chat_wallpaper_gradient_to1 || key == key_chat_wallpaper_gradient_to2 || key == key_chat_wallpaper_gradient_to3) {
+            return 0xFF050505;
+        }
+        if (key == key_dialogBackground || key == key_dialogBackgroundGray || key == key_chats_menuTopBackground || key == key_sheet_scrollUp) {
+            return 0xFF0A0F0C;
+        }
+        // Accents: #01ba53 (Neon emerald green)
+        if (key == key_actionBarDefaultIcon || key == key_chats_menuItemIcon || key == key_chats_actionBackground || key == key_chats_unreadCounter || key == key_switchTrackChecked || key == key_switch2TrackChecked || key == key_checkboxCheck || key == key_dialogButton || key == key_dialogRoundCheckBoxCheck || key == key_radioBackgroundChecked || key == key_featuredStickers_addButton || key == key_profile_actionBackground || key == key_chat_messagePanelSend || key == key_chat_messagePanelIcons || key == key_chat_attachSendButton || key == key_player_progress || key == key_fastScrollActive || key == key_windowBackgroundWhiteBlueText || key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 || key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteValueText || key == key_chat_recordedVoiceDot || key == key_chat_messageLinkOut || key == key_chat_messageLinkIn) {
+            return 0xFF01BA53;
+        }
+        // Chat bubbles: #0E381F (Emerald out) & #121814 (Obsidian in)
+        if (key == key_chat_outBubble) {
+            return 0xFF0E381F;
+        }
+        if (key == key_chat_outBubbleSelected) {
+            return 0xFF154C2B;
+        }
+        if (key == key_chat_inBubble) {
+            return 0xFF121814;
+        }
+        if (key == key_chat_inBubbleSelected) {
+            return 0xFF1A221C;
+        }
+        if (key == key_chats_actionIcon || key == key_chats_unreadCounterText || key == key_profile_actionIcon) {
+            return 0xFF050505;
+        }
+        // High contrast texts
+        if (key == key_actionBarDefaultTitle || key == key_chats_menuItemText || key == key_chat_outText || key == key_chat_inText || key == key_windowBackgroundWhiteBlackText || key == key_dialogTextBlack || key == key_profile_title || key == key_chats_name) {
+            return 0xFFFFFFFF;
+        }
+        if (key == key_chat_outTimeText) {
+            return 0xFF80C99B;
+        }
+        if (key == key_chat_inTimeText || key == key_chats_message || key == key_windowBackgroundWhiteGrayText || key == key_dialogTextGray) {
+            return 0xFF8A9A90;
+        }
+        if (key == key_chats_date || key == key_windowBackgroundWhiteGrayText2) {
+            return 0xFF687870;
+        }
+        return 0;
+    }
+
     public static int getColor(int key, boolean[] isDefault, boolean ignoreAnimation) {
+        int ggramC = getGgramColor(key);
+        if (ggramC != 0) {
+            return ggramC;
+        }
         if (!ignoreAnimation && animatingColors != null) {
             int index = animatingColors.indexOfKey(key);
             if (index >= 0) {

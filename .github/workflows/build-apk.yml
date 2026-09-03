@@ -39,7 +39,9 @@ jobs:
       - name: Prepare APK Artifacts
         run: |
           mkdir -p output_apk
-          find TMessagesProj_AppStandalone/build/outputs/apk -type f -name "*.apk" -exec cp {} output_apk/Ggram-Full-Telegram-v1.0.0.apk \;
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          if [ -z "$TAG_NAME" ] || [ "$TAG_NAME" = "$GITHUB_REF" ]; then TAG_NAME="v1.1.0"; fi
+          find TMessagesProj_AppStandalone/build/outputs/apk -type f -name "*.apk" -exec cp {} output_apk/Ggram-Full-Telegram-${TAG_NAME}.apk \;
           ls -la output_apk/
 
 

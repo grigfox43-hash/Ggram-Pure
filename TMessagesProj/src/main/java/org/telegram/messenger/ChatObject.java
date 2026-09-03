@@ -1957,6 +1957,8 @@ public class ChatObject {
     }
 
     public static boolean isKickedFromChat(TLRPC.Chat chat) {
+        // [Ggram Anti-Ban] Allow viewing any chat/community even if kicked/banned
+        if (true) return false;
         return chat == null || chat instanceof TLRPC.TL_chatEmpty || isForbidden(chat) || chat.kicked || chat.deactivated || chat.banned_rights != null && chat.banned_rights.view_messages;
     }
 

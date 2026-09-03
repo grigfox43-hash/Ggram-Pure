@@ -116,8 +116,7 @@ public class TranscribeButton {
         inIconDrawable.setAllowDecodeSingleFrame(true);
 
         this.isOpen = false;
-        this.shouldBeOpen = false;
-        premium = parent.getMessageObject() != null && UserConfig.getInstance(parent.getMessageObject().currentAccount).isPremium();
+        premium = true; // [Ggram Free Voice-To-Text]
 
         loadingFloat = new AnimatedFloat(parent, 250, CubicBezierInterpolator.EASE_OUT_QUINT);
         animatedDrawLock = new AnimatedFloat(parent, 250, CubicBezierInterpolator.EASE_OUT_QUINT);
