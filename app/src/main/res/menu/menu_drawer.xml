@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_chats"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Все чаты" />
+    <item
+        android:id="@+id/nav_saved"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Избранное" />
+    <item
+        android:id="@+id/nav_adblock"
+        android:icon="@drawable/ic_adblock_shield"
+        android:title="100% AdBlock (Включен)" />
+    <item
+        android:id="@+id/nav_translate"
+        android:icon="@drawable/ic_translate"
+        android:title="Переводчик сообщений" />
+</menu>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.GgramPure" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/ggram_green</item>
+        <item name="colorPrimaryVariant">@color/ggram_green</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">@color/ggram_green</item>
+        <item name="android:statusBarColor">@color/ggram_surface</item>
+        <item name="android:windowBackground">@color/ggram_black</item>
+    </style>
+</resources>

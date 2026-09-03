@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ggram</string>
+    <string name="telegram_messenger">Telegram</string>
+    <string name="adblock_active">100% AdBlock Активен</string>
+    <string name="translate_button">Перевести</string>
+    <string name="translate_original">Показать оригинал</string>
+    <string name="translating">Переводим...</string>
+    <string name="translation_failed">Не удалось перевести сообщение</string>
+</resources>
