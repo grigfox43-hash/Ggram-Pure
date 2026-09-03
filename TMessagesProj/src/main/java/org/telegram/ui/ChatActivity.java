@@ -33395,7 +33395,16 @@ public class ChatActivity extends BaseFragment implements
                     if (caption != null) {
                         AndroidUtilities.addToClipboard(caption);
                     } else {
-                        AndroidUtilities.addToClipboard(getMessageContent(selectedObject, 0, false));
+                        if (org.ggram.config.GgramConfig.isCopyMarkdown) {
+                            CharSequence md = org.ggram.util.GgramTextUtils.toMarkdown(selectedObject);
+                            if (!android.text.TextUtils.isEmpty(md)) {
+                                AndroidUtilities.addToClipboard(md);
+                            } else {
+                                AndroidUtilities.addToClipboard(getMessageContent(selectedObject, 0, false));
+                            }
+                        } else {
+                            AndroidUtilities.addToClipboard(getMessageContent(selectedObject, 0, false));
+                        }
                     }
                 }
                 createUndoView();
@@ -39687,6 +39696,12 @@ public class ChatActivity extends BaseFragment implements
 
         @Override
         public boolean didLongPressUserAvatar(ChatMessageCell cell, TLRPC.User user, float touchX, float touchY) {
+            if (org.ggram.config.GgramConfig.isShowMetadataDetails && user != null) {
+                int dcId = user.photo != null ? user.photo.dc_id : 0;
+                String meta = "User ID: " + user.id + (dcId != 0 ? " • DC: " + dcId : "");
+                AndroidUtilities.addToClipboard(String.valueOf(user.id));
+                org.telegram.ui.Components.BulletinFactory.of(ChatActivity.this).createCopyBulletin("Скопировано: " + meta).show();
+            }
             if (isAvatarPreviewerEnabled()) {
                 final boolean enableMention = currentChat != null && (bottomChannelButtonsLayout == null || bottomChannelButtonsLayout.getVisibility() != View.VISIBLE) && (bottomOverlay == null || bottomOverlay.getVisibility() != View.VISIBLE);
                 final boolean enableSearchMessages = currentChat != null && (threadMessageId == 0 || isTopic) && (!ChatObject.isChannel(currentChat) || currentChat.megagroup);
@@ -45993,7 +46008,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                 } else if (type == 4) {
                     if (!noforwardsOrPaidMedia && !selectedObject.hasRevealedExtendedMedia()) {
-                        if (selectedObject.isVideo()) {
+                        if (selectedObject.isVideo() || (org.ggram.config.GgramConfig.isSaveRoundVideosAsMp4 && selectedObject.isRoundVideo())) {
                             if (!selectedObject.needDrawBluredPreview()) {
                                 items.add(LocaleController.getString(R.string.SaveToGallery));
                                 options.add(OPTION_SAVE_TO_GALLERY);
@@ -46054,7 +46069,7 @@ public class ChatActivity extends BaseFragment implements
                         icons.add(R.drawable.msg_shareout);
                     }
                 } else if (type == 6 && !noforwardsOrPaidMedia && !selectedObject.hasRevealedExtendedMedia()) {
-                    if (!selectedObject.needDrawBluredPreview() && !selectedObject.isVoiceOnce() && !selectedObject.isRoundOnce()) {
+                    if (!selectedObject.needDrawBluredPreview() && (!selectedObject.isVoiceOnce() && !selectedObject.isRoundOnce() || org.ggram.config.GgramConfig.isAntiRecallMedia)) {
                         items.add(LocaleController.getString(R.string.SaveToGallery));
                         options.add(OPTION_SAVE_TO_GALLERY2);
                         icons.add(R.drawable.msg_gallery);

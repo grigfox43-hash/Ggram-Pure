@@ -8985,32 +8985,33 @@ public class Theme {
     }
 
         public static int getGgramColor(int key) {
-        // Backgrounds: #050505 (Obsidian black) and #0A0F0C (Surface)
-        if (key == key_windowBackgroundWhite || key == key_windowBackgroundGray || key == key_actionBarDefault || key == key_chats_menuBackground || key == key_chat_wallpaper || key == key_chat_wallpaper_gradient_to1 || key == key_chat_wallpaper_gradient_to2 || key == key_chat_wallpaper_gradient_to3) {
-            return 0xFF050505;
+        // Dark gray background: #18191D (Charcoal dark gray)
+        if (key == key_windowBackgroundWhite || key == key_windowBackgroundGray || key == key_chats_menuBackground || key == key_chat_wallpaper || key == key_chat_wallpaper_gradient_to1 || key == key_chat_wallpaper_gradient_to2 || key == key_chat_wallpaper_gradient_to3) {
+            return 0xFF18191D;
         }
-        if (key == key_dialogBackground || key == key_dialogBackgroundGray || key == key_chats_menuTopBackground || key == key_sheet_scrollUp) {
-            return 0xFF0A0F0C;
+        // Surface & Card background: #22242A (Elevated dark slate gray)
+        if (key == key_actionBarDefault || key == key_dialogBackground || key == key_dialogBackgroundGray || key == key_chats_menuTopBackground || key == key_sheet_scrollUp) {
+            return 0xFF22242A;
         }
-        // Accents: #01ba53 (Neon emerald green)
-        if (key == key_actionBarDefaultIcon || key == key_chats_menuItemIcon || key == key_chats_actionBackground || key == key_chats_unreadCounter || key == key_switchTrackChecked || key == key_switch2TrackChecked || key == key_checkboxCheck || key == key_dialogButton || key == key_dialogRoundCheckBoxCheck || key == key_radioBackgroundChecked || key == key_featuredStickers_addButton || key == key_profile_actionBackground || key == key_chat_messagePanelSend || key == key_chat_messagePanelIcons || key == key_player_progress || key == key_fastScrollActive || key == key_windowBackgroundWhiteBlueText || key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 || key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteValueText || key == key_chat_recordedVoiceDot || key == key_chat_messageLinkOut || key == key_chat_messageLinkIn) {
+        // ALL Icons & Accents: #01ba53 (Neon emerald green)
+        if (key == key_windowBackgroundWhiteGrayIcon || key == key_windowBackgroundWhiteBlueIcon || key == key_actionBarDefaultIcon || key == key_actionBarDefaultSubmenuItemIcon || key == key_actionBarActionModeDefaultIcon || key == key_chats_menuItemIcon || key == key_chats_actionBackground || key == key_chats_unreadCounter || key == key_chats_pinnedIcon || key == key_chats_archiveIcon || key == key_chats_mentionIcon || key == key_chat_attachIcon || key == key_chat_replyPanelIcons || key == key_chat_searchPanelIcons || key == key_chat_messagePanelSend || key == key_chat_messagePanelIcons || key == key_chat_emojiBottomPanelIcon || key == key_chat_emojiPanelIconSelected || key == key_dialogIcon || key == key_dialogSearchIcon || key == key_files_folderIcon || key == key_files_folderIconBackground || key == key_location_sendLocationIcon || key == key_location_sendLiveLocationIcon || key == key_location_actionIcon || key == key_sharedMedia_startStopLoadIcon || key == key_featuredStickers_addedIcon || key == key_chat_outSentCheck || key == key_chat_outSentCheckSelected || key == key_chat_goDownButton || key == key_chat_goDownButtonCounter || key == key_switchTrackChecked || key == key_switch2TrackChecked || key == key_checkboxCheck || key == key_dialogButton || key == key_dialogRoundCheckBoxCheck || key == key_radioBackgroundChecked || key == key_featuredStickers_addButton || key == key_profile_actionBackground || key == key_player_progress || key == key_fastScrollActive || key == key_windowBackgroundWhiteBlueText || key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 || key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteValueText || key == key_chat_recordedVoiceDot || key == key_chat_messageLinkOut || key == key_chat_messageLinkIn) {
             return 0xFF01BA53;
         }
-        // Chat bubbles: #0E381F (Emerald out) & #121814 (Obsidian in)
+        // Chat bubbles: #1B3B26 (Emerald out) & #22242A (Dark gray in)
         if (key == key_chat_outBubble) {
-            return 0xFF0E381F;
+            return 0xFF1B3B26;
         }
         if (key == key_chat_outBubbleSelected) {
-            return 0xFF154C2B;
+            return 0xFF244F34;
         }
         if (key == key_chat_inBubble) {
-            return 0xFF121814;
+            return 0xFF22242A;
         }
         if (key == key_chat_inBubbleSelected) {
-            return 0xFF1A221C;
+            return 0xFF2B2E35;
         }
         if (key == key_chats_actionIcon || key == key_chats_unreadCounterText || key == key_profile_actionIcon) {
-            return 0xFF050505;
+            return 0xFF18191D;
         }
         // High contrast texts
         if (key == key_actionBarDefaultTitle || key == key_chats_menuItemText || key == key_chat_messageTextOut || key == key_chat_messageTextIn || key == key_windowBackgroundWhiteBlackText || key == key_dialogTextBlack || key == key_profile_title || key == key_chats_name) {
@@ -9020,10 +9021,10 @@ public class Theme {
             return 0xFF80C99B;
         }
         if (key == key_chat_inTimeText || key == key_chats_message || key == key_windowBackgroundWhiteGrayText || key == key_dialogTextGray) {
-            return 0xFF8A9A90;
+            return 0xFF9EACB2;
         }
         if (key == key_chats_date || key == key_windowBackgroundWhiteGrayText2) {
-            return 0xFF687870;
+            return 0xFF7D8C92;
         }
         return 0;
     }

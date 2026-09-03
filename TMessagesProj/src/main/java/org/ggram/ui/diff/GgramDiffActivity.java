@@ -28,7 +28,7 @@ public class GgramDiffActivity extends Activity {
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(0xFF050505);
+        root.setBackgroundColor(0xFF18191D);
 
         // Header / Title bar
         TextView title = new TextView(this);
@@ -42,7 +42,7 @@ public class GgramDiffActivity extends Activity {
         List<MessageEditRecord> revisions = GgramAntiRecallManager.getEditHistory(messageId);
 
         ListView listView = new ListView(this);
-        listView.setBackgroundColor(0xFF050505);
+        listView.setBackgroundColor(0xFF18191D);
         listView.setDivider(null);
         listView.setAdapter(new DiffAdapter(revisions));
         root.addView(listView, new LinearLayout.LayoutParams(

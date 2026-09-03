@@ -8696,6 +8696,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             int maxPinnedCount;
             if (containsFilter && filter != null) {
                 maxPinnedCount = 100 - filter.alwaysShow.size();
+            } else if (org.ggram.config.GgramConfig.isUnlimitedPins) {
+                maxPinnedCount = 999;
             } else if (folderId != 0 || filter != null) {
                 if (getUserConfig().isPremium()) {
                     maxPinnedCount = getMessagesController().maxFolderPinnedDialogsCountPremium;
@@ -10720,6 +10722,12 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
                 getMessagesController().checkIfFolderEmpty(folderId);
             };
+            if (org.ggram.config.GgramConfig.isConfirmDialogDelete && getParentActivity() != null) {
+                AlertsCreator.createClearOrDeleteDialogAlert(DialogsActivity.this, false, chat, user, DialogObject.isEncryptedDialog(dialogId), true, false, false, (param) -> {
+                    deleteRunnable.run();
+                });
+                return;
+            }
             createUndoView();
             if (undoView[0] != null) {
                 if (!ChatObject.isForum(chat)) {
@@ -12756,7 +12764,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
         boolean onlySelfStories = !isArchive() && getStoriesController().hasOnlySelfStories();
         boolean newVisibility;
-        if (communityId != 0) {
+        if (org.ggram.config.GgramConfig.isHideStories) {
+            newVisibility = false;
+        } else if (communityId != 0) {
             newVisibility = false;
         } else if (isArchive()) {
             newVisibility = !getStoriesController().getHiddenList().isEmpty();
@@ -13760,6 +13770,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
             }
         }
+        io.add(R.drawable.msg_settings_old, "Настройки Ggram", () -> {
+            presentFragment(new org.ggram.ui.settings.GgramSettingsActivity());
+        });
         if (getUserConfig().showCallsTab) {
             io.add(R.drawable.msg_settings_old, getString(R.string.Settings), () -> {
                 presentFragment(new SettingsActivity());
