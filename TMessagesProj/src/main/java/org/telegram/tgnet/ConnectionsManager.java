@@ -283,9 +283,12 @@ public class ConnectionsManager extends BaseController {
         SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
         if (preferences.contains("pushConnection")) {
             return preferences.getBoolean("pushConnection", true);
-        } else {
-            return MessagesController.getMainSettings(UserConfig.selectedAccount).getBoolean("backgroundConnection", false);
         }
+        SharedPreferences notifPreferences = MessagesController.getNotificationsSettings(currentAccount);
+        if (notifPreferences.contains("pushConnection")) {
+            return notifPreferences.getBoolean("pushConnection", true);
+        }
+        return MessagesController.getMainSettings(UserConfig.selectedAccount).getBoolean("backgroundConnection", true);
     }
 
     public long getCurrentTimeMillis() {

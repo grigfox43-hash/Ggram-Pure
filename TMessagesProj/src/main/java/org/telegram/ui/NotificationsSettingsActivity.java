@@ -731,6 +731,8 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putBoolean("pushConnection", !enabled);
                 editor.commit();
+                MessagesController.getGlobalNotificationsSettings().edit().putBoolean("pushConnection", !enabled).commit();
+                getMessagesController().backgroundConnection = !enabled;
                 if (!enabled) {
                     ConnectionsManager.getInstance(currentAccount).setPushConnectionEnabled(true);
                 } else {
@@ -760,6 +762,8 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putBoolean("pushService", !enabled);
                 editor.commit();
+                MessagesController.getGlobalNotificationsSettings().edit().putBoolean("pushService", !enabled).commit();
+                getMessagesController().keepAliveService = !enabled;
                 ApplicationLoader.startPushService();
             } else if (position == callsVibrateRow) {
                 if (getParentActivity() == null) {

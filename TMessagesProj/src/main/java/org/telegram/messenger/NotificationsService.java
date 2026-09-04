@@ -31,6 +31,17 @@ public class NotificationsService extends Service {
         return null;
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
+        if (preferences.getBoolean("pushService", true)) {
+            Intent intent = new Intent("org.telegram.start");
+            intent.setPackage(getPackageName());
+            sendBroadcast(intent);
+        }
+    }
+
     public void onDestroy() {
         super.onDestroy();
         SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();

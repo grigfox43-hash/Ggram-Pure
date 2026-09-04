@@ -361,7 +361,12 @@ public class ApplicationLoader extends Application {
         if (preferences.contains("pushService")) {
             enabled = preferences.getBoolean("pushService", true);
         } else {
-            enabled = MessagesController.getMainSettings(UserConfig.selectedAccount).getBoolean("keepAliveService", false);
+            SharedPreferences notifPreferences = MessagesController.getNotificationsSettings(UserConfig.selectedAccount);
+            if (notifPreferences.contains("pushService")) {
+                enabled = notifPreferences.getBoolean("pushService", true);
+            } else {
+                enabled = MessagesController.getMainSettings(UserConfig.selectedAccount).getBoolean("keepAliveService", true);
+            }
         }
         if (enabled) {
             try {
@@ -370,7 +375,11 @@ public class ApplicationLoader extends Application {
 
             }
         } else {
-            applicationContext.stopService(new Intent(applicationContext, NotificationsService.class));
+            try {
+                applicationContext.stopService(new Intent(applicationContext, NotificationsService.class));
+            } catch (Throwable ignore) {
+
+            }
         }
     }
 

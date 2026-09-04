@@ -9029,7 +9029,7 @@ public class Theme {
             key == key_chats_unreadCounter || key == key_chats_unreadCounterMuted || key == key_chat_goDownButtonCounterBackground ||
             key == key_checkboxSquareBackground || key == key_dialogRoundCheckBox || key == key_dialogCheckboxSquareBackground ||
             key == key_dialogRadioBackgroundChecked || key == key_radioBackgroundChecked || key == key_windowBackgroundChecked ||
-            key == key_switch2TrackChecked || key == key_switchTrackBlueChecked || key == key_featuredStickers_addButton ||
+            key == key_switchTrackChecked || key == key_switch2TrackChecked || key == key_switchTrackBlueChecked || key == key_featuredStickers_addButton ||
             key == key_featuredStickers_addButton2 || key == key_featuredStickers_unread ||
             key == key_profile_actionBackground || key == key_profile_verifiedBackground ||
             key == key_chats_verifiedBackground || key == key_chats_archiveBackground ||
@@ -9079,9 +9079,6 @@ public class Theme {
         }
 
         // 5. Alpha & Semi-Transparent Accents
-        if (key == key_switchTrackChecked) {
-            return 0x6601BA53;
-        }
         if (key == key_switchTrackBlueSelectorChecked) {
             return 0x2101BA53;
         }
