@@ -32855,6 +32855,9 @@ public class ChatActivity extends BaseFragment implements
                 overlay.getLocationInWindow(loc2);
                 overlay.tap(loc[0] - loc2[0] + x, loc[1] - loc2[1] + y + (cell instanceof ChatMessageCell ? ((ChatMessageCell) cell).starsPriceTopPadding : 0), false, true);
             }
+            return;
+        }
+
         if (getDialogId() == getUserConfig().getClientUserId() && !getUserConfig().isPremium() && !org.ggram.config.GgramConfig.isSavedTagsEnabled && primaryMessage.messageOwner != null && (primaryMessage.messageOwner.reactions == null || (primaryMessage.messageOwner.reactions.reactions_as_tags || primaryMessage.messageOwner.reactions.results.isEmpty()))) {
             new PremiumFeatureBottomSheet(ChatActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true).show();
             return;
