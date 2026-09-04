@@ -10,26 +10,26 @@ build_app:
   stage: build
   image: mobiledevops/android-sdk-image:34.0.0-jdk17
   before_script:
-    - chmod +x gradlew
+    - chmod +x gradlew || true
     - yes | sdkmanager --licenses || true
     - sdkmanager "platforms;android-35" "build-tools;35.0.0" || true
     - |
       if [ ! -f "TMessagesProj/config/ggram_release.jks" ]; then
         echo "Generating release keystore..."
-        keytool -genkeypair -v -keystore "TMessagesProj/config/ggram_release.jks" -storepass "ggram2026release" -alias "ggram" -keypass "ggram2026release" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Ggram, OU=Ggram Pure, O=Ggram, L=Dubai, ST=Dubai, C=AE"
+        keytool -genkeypair -v -keystore "TMessagesProj/config/ggram_release.jks" -storepass "ggram2026release" -alias "ggram" -keypass "ggram2026release" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Ggram, OU=Ggram Pure, O=Ggram, L=Dubai, ST=Dubai, C=AE" || true
       fi
     - |
       mkdir -p TMessagesProj/src/main/assets/model-ru
       if [ ! -f "TMessagesProj/src/main/assets/model-ru/uuid" ]; then
         echo "Downloading Vosk Russian Speech Model..."
         curl -sSL "https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip" -o vosk-model.zip
-        unzip -q vosk-model.zip
+        unzip -q -o vosk-model.zip
         cp -r vosk-model-small-ru-0.22/* TMessagesProj/src/main/assets/model-ru/
         echo "vosk-ru-0.22" > TMessagesProj/src/main/assets/model-ru/uuid
         rm -rf vosk-model.zip vosk-model-small-ru-0.22
       fi
   script:
-    - ./gradlew :TMessagesProj_AppStandalone:assembleAfatStandalone --stacktrace
+    - bash ./gradlew :TMessagesProj_AppStandalone:assembleAfatStandalone --stacktrace
     - mkdir -p output_apk
     - TAG_NAME="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - find TMessagesProj_AppStandalone/build/outputs/apk -type f -name "*.apk" -exec cp {} output_apk/Ggram-Full-Telegram-${TAG_NAME}.apk \;
