@@ -2314,8 +2314,8 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             }
 
             started = true;
-            int resolution = MessagesController.getInstance(currentAccount).roundVideoSize;
-            int bitrate = MessagesController.getInstance(currentAccount).roundVideoBitrate * 1024;
+            int resolution = org.ggram.config.GgramConfig.isHqRoundVideo ? 640 : 384;
+            int bitrate = (org.ggram.config.GgramConfig.isHqRoundVideo ? 2500 : 1000) * 1024;
             AndroidUtilities.runOnUIThread(() -> {
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.stopAllHeavyOperations, 512);
             });

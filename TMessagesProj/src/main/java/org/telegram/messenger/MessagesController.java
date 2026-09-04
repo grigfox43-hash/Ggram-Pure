@@ -186,8 +186,8 @@ public class MessagesController extends BaseController implements NotificationCe
     private LongSparseIntArray pendingUnreadCounter = new LongSparseIntArray();
     private int lastPrintingStringCount;
     private SparseArray<ChatlistUpdatesStat> chatlistFoldersUpdates = new SparseArray<>();
-    public int largeQueueMaxActiveOperations = 2;
-    public int smallQueueMaxActiveOperations = 5;
+    public int largeQueueMaxActiveOperations = 8;
+    public int smallQueueMaxActiveOperations = 25;
     public int stealthModeFuture;
     public int stealthModePast;
     public int stealthModeCooldown;
@@ -533,9 +533,9 @@ public class MessagesController extends BaseController implements NotificationCe
         return getUserConfig().isPremium() ? config.messageLengthLimitPremium.get() : config.messageLengthLimitDefault.get();
     }
     public int maxCaptionLength;
-    public int roundVideoSize;
-    public int roundVideoBitrate;
-    public int roundAudioBitrate;
+    public int roundVideoSize = 640;
+    public int roundVideoBitrate = 2500;
+    public int roundAudioBitrate = 128;
     public boolean blockedCountry;
     public boolean preloadFeaturedStickers;
     public String youtubePipType;
@@ -543,7 +543,7 @@ public class MessagesController extends BaseController implements NotificationCe
     public boolean backgroundConnection;
     public float animatedEmojisZoom;
     public boolean filtersEnabled;
-    public boolean getfileExperimentalParams;
+    public boolean getfileExperimentalParams = true;
     public boolean smsjobsStickyNotificationEnabled;
     public boolean collectDeviceStats;
     public boolean showFiltersTooltip;
@@ -1621,7 +1621,7 @@ public class MessagesController extends BaseController implements NotificationCe
         qrLoginCamera = mainPreferences.getBoolean("qrLoginCamera", true);
         saveGifsWithStickers = mainPreferences.getBoolean("saveGifsWithStickers", false);
         filtersEnabled = mainPreferences.getBoolean("filtersEnabled", false);
-        getfileExperimentalParams = mainPreferences.getBoolean("getfileExperimentalParams", false);
+        getfileExperimentalParams = mainPreferences.getBoolean("getfileExperimentalParams", true);
         smsjobsStickyNotificationEnabled = mainPreferences.getBoolean("smsjobsStickyNotificationEnabled", false);
         showFiltersTooltip = mainPreferences.getBoolean("showFiltersTooltip", false);
         autoarchiveAvailable = mainPreferences.getBoolean("autoarchiveAvailable", false);
@@ -1632,9 +1632,9 @@ public class MessagesController extends BaseController implements NotificationCe
         ringtoneSizeMax = mainPreferences.getInt("ringtoneSizeMax", 1024_00);
         pmReadDateExpirePeriod = mainPreferences.getInt("pmReadDateExpirePeriod", 7 * 86400);
         suggestStickersApiOnly = mainPreferences.getBoolean("suggestStickersApiOnly", false);
-        roundVideoSize = mainPreferences.getInt("roundVideoSize", 384);
-        roundVideoBitrate = mainPreferences.getInt("roundVideoBitrate", 1000);
-        roundAudioBitrate = mainPreferences.getInt("roundAudioBitrate", 64);
+        roundVideoSize = Math.max(640, mainPreferences.getInt("roundVideoSize", 640));
+        roundVideoBitrate = Math.max(2500, mainPreferences.getInt("roundVideoBitrate", 2500));
+        roundAudioBitrate = Math.max(128, mainPreferences.getInt("roundAudioBitrate", 128));
         pendingSuggestions = mainPreferences.getStringSet("pendingSuggestions", null);
         dismissedSuggestions = mainPreferences.getStringSet("dismissedSuggestions", null);
         channelsLimitDefault = mainPreferences.getInt("channelsLimitDefault", 500);
@@ -1684,8 +1684,8 @@ public class MessagesController extends BaseController implements NotificationCe
         giftAttachMenuIcon = mainPreferences.getBoolean("giftAttachMenuIcon", false);
         giftTextFieldIcon = mainPreferences.getBoolean("giftTextFieldIcon", false);
         checkResetLangpack = mainPreferences.getInt("checkResetLangpack", 0);
-        smallQueueMaxActiveOperations = mainPreferences.getInt("smallQueueMaxActiveOperations", 5);
-        largeQueueMaxActiveOperations = mainPreferences.getInt("largeQueueMaxActiveOperations", 2);
+        smallQueueMaxActiveOperations = Math.max(25, mainPreferences.getInt("smallQueueMaxActiveOperations", 25));
+        largeQueueMaxActiveOperations = Math.max(8, mainPreferences.getInt("largeQueueMaxActiveOperations", 8));
         stealthModeFuture = mainPreferences.getInt("stories_stealth_future_period", 25 * 60);
         storiesChangelogUserId = mainPreferences.getLong("stories_changelog_user_id", 777000);
         giveawayAddPeersMax = mainPreferences.getLong("giveaway_add_peers_max", 10);
