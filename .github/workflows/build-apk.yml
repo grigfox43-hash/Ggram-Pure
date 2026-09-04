@@ -34,7 +34,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Full Telegram APK
-        run: ./gradlew :TMessagesProj_AppStandalone:assembleAfatDebug --stacktrace
+        run: ./gradlew :TMessagesProj_AppStandalone:assembleAfatStandalone --stacktrace
 
       - name: Prepare APK Artifacts
         run: |
