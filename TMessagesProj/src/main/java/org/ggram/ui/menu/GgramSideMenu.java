@@ -24,7 +24,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.ggram.ui.settings.GgramSettingsActivity;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
@@ -209,22 +208,10 @@ public class GgramSideMenu {
             });
         });
 
-        // Item: Settings
+        // Item: Settings (General Settings)
         addItem(context, itemsList, R.drawable.msg_settings, LocaleController.getString("Settings", R.string.Settings), () -> {
             dismissMenu(dialog, scrim, drawer, drawerWidth, () -> {
                 fragment.presentFragment(new SettingsActivity());
-            });
-        });
-
-        // Separator
-        View divider = new View(context);
-        divider.setBackgroundColor(0xFF22242A);
-        itemsList.addView(divider, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 1, 16, 6, 16, 6));
-
-        // Item: Ggram Settings
-        addItem(context, itemsList, R.drawable.msg_secret, "Настройки Ggram", () -> {
-            dismissMenu(dialog, scrim, drawer, drawerWidth, () -> {
-                fragment.presentFragment(new GgramSettingsActivity());
             });
         });
 

@@ -1781,9 +1781,9 @@ public class Theme {
                     themeAccent.patternIntensity = -0.45f;
                     themeAccent.patternSlug = "RepJ5uE_SVABAAAAr4d0YhgB850";
                     themeAccent.backgroundOverrideColor = 0xff18191d;
-                    themeAccent.backgroundGradientOverrideColor1 = 0xff102819;
-                    themeAccent.backgroundGradientOverrideColor2 = 0xff1f2228;
-                    themeAccent.backgroundGradientOverrideColor3 = 0xff0e2216;
+                    themeAccent.backgroundGradientOverrideColor1 = 0xff202227;
+                    themeAccent.backgroundGradientOverrideColor2 = 0xff18191d;
+                    themeAccent.backgroundGradientOverrideColor3 = 0xff141518;
                 }
                 themeAccentsMap.put(themeAccent.id, themeAccent);
                 themeAccents.add(themeAccent);
@@ -3997,9 +3997,9 @@ public class Theme {
                 new int[]    {                    0xFF143D24,                    0xFFB46C1B,                    0xFFAF4F6F,                    0xFF266E8D,                    0xFF744EB7,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000 },
                 new int[]    {                    0xFF6855BB,                    0xFFA53B4A,                    0xFF62499C,                    0xFF2F919D,                    0xFF298B95,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000,                    0x00000000 },
                 new int[]    {                    0xFF18191D,                    0xFF1e1118,                    0xFF0f0b10,                    0xFF090c0c,                    0xFF071519,                    0xff0d0e17,                    0xff111b1c,                    0xff0c110c,                    0xff0e0b0d,                    0xff1d160f,                    0xff09090a,                    0xff1c1210,                    0xff1d1b18,                    0xff0e1012 },
-                new int[]    {                    0xFF102819,                    0xFF100f13,                    0xFF1b151a,                    0xFF141f22,                    0xFF0c0c0f,                    0xff090a0c,                    0xff0a0e0e,                    0xff080908,                    0xff1a1618,                    0xff13100d,                    0xff1e1a21,                    0xff0f0d0c,                    0xff0c0b08,                    0xff070707 },
-                new int[]    {                    0xFF1F2228,                    0xFF211623,                    0xFF130e12,                    0xFF0d0f11,                    0xFF10191f,                    0xff181c28,                    0xff142121,                    0xff121812,                    0xff130e11,                    0xff1a130f,                    0xff0b0a0b,                    0xff120d0b,                    0xff15140f,                    0xff101214 },
-                new int[]    {                    0xFF0E2216,                    0xFF111016,                    0xFF21141a,                    0xFF111a1b,                    0xFF0a0d13,                    0xff0e0f12,                    0xff070c0b,                    0xff0b0d0b,                    0xff22121e,                    0xff0f0c0c,                    0xff110f17,                    0xff070606,                    0xff0c0a0a,                    0xff09090b },
+                new int[]    {                    0xFF202227,                    0xFF100f13,                    0xFF1b151a,                    0xFF141f22,                    0xFF0c0c0f,                    0xff090a0c,                    0xff0a0e0e,                    0xff080908,                    0xff1a1618,                    0xff13100d,                    0xff1e1a21,                    0xff0f0d0c,                    0xff0c0b08,                    0xff070707 },
+                new int[]    {                    0xFF18191D,                    0xFF211623,                    0xFF130e12,                    0xFF0d0f11,                    0xFF10191f,                    0xff181c28,                    0xff142121,                    0xff121812,                    0xff130e11,                    0xff1a130f,                    0xff0b0a0b,                    0xff120d0b,                    0xff15140f,                    0xff101214 },
+                new int[]    {                    0xFF141518,                    0xFF111016,                    0xFF21141a,                    0xFF111a1b,                    0xFF0a0d13,                    0xff0e0f12,                    0xff070c0b,                    0xff0b0d0b,                    0xff22121e,                    0xff0f0c0c,                    0xff110f17,                    0xff070606,                    0xff0c0a0a,                    0xff09090b },
                 new int[]    {                             9,                            10,                            11,                            12,                            13,                             0,                             1,                             2,                             3,                             4,                             5,                             6,                             7,                             8 },
                 new String[] { "RepJ5uE_SVABAAAAr4d0YhgB850", "9LW_RcoOSVACAAAAFTk3DTyXN-M", "O-wmAfBPSFADAAAA4zINVfD_bro", "F5oWoCs7QFACAAAAgf2bD_mg8Bw", "-Xc-np9y2VMCAAAARKr0yNNPYW0", "fqv01SQemVIBAAAApND8LDRUhRU", "F5oWoCs7QFACAAAAgf2bD_mg8Bw", "ptuUd96JSFACAAAATobI23sPpz0", "p-pXcflrmFIBAAAAvXYQk-mCwZU", "Nl8Pg2rBQVACAAAA25Lxtb8SDp0", "dhf9pceaQVACAAAAbzdVo4SCiZA", "9GcNVISdSVADAAAAUcw5BYjELW4", "9LW_RcoOSVACAAAAFTk3DTyXN-M", "dk_wwlghOFACAAAAfz9xrxi6euw" },
                 new int[]    {                            45,                           135,                             0,                           180,                             0,                             0,                             0,                             0,                             0,                             0,                             0,                             0,                             0,                             0 },
@@ -9006,49 +9006,82 @@ public class Theme {
             return 0xFF22242A;
         }
 
-        // 3. High Contrast White on Green (FAB icon, unread badges, checks) - prevents blending!
+        // 3. Text & Icons on Green Background: #18191D (Dark background color on green, per user request)
         if (key == key_chats_actionIcon || key == key_dialogFloatingIcon || key == key_profile_actionIcon ||
             key == key_chats_unreadCounterText || key == key_chat_goDownButtonCounter ||
-            key == key_dialogCheckboxSquareCheck || key == key_dialogRoundCheckBoxCheck ||
-            key == key_actionBarDefaultIcon || key == key_actionBarActionModeDefaultIcon ||
-            key == key_actionBarDefaultSubmenuItemIcon) {
-            return 0xFFFFFFFF;
+            key == key_checkboxSquareCheck || key == key_dialogCheckboxSquareCheck ||
+            key == key_dialogRoundCheckBoxCheck || key == key_checkboxCheck ||
+            key == key_chat_attachCheckBoxCheck || key == key_featuredStickers_buttonText ||
+            key == key_picker_badgeText || key == key_windowBackgroundCheckText ||
+            key == key_chats_verifiedCheck || key == key_profile_verifiedCheck ||
+            key == key_chats_archiveIcon || key == key_chats_archiveText) {
+            return 0xFF18191D;
         }
 
-        // 4. Primary Emerald Accent: #01BA53
+        // 4. Primary Emerald Accent: #01BA53 (Eliminating all blue/cyan elements)
         if (key == key_chats_actionBackground || key == key_dialogFloatingButton ||
             key == key_chats_unreadCounter || key == key_chats_unreadCounterMuted || key == key_chat_goDownButtonCounterBackground ||
-            key == key_checkboxCheck || key == key_dialogRoundCheckBox || key == key_dialogCheckboxSquareBackground ||
+            key == key_checkboxSquareBackground || key == key_dialogRoundCheckBox || key == key_dialogCheckboxSquareBackground ||
             key == key_dialogRadioBackgroundChecked || key == key_radioBackgroundChecked || key == key_windowBackgroundChecked ||
-            key == key_switch2TrackChecked || key == key_featuredStickers_addButton ||
-            key == key_profile_actionBackground || key == key_dialogButton || key == key_windowBackgroundWhiteBlueButton ||
+            key == key_switch2TrackChecked || key == key_switchTrackBlueChecked || key == key_featuredStickers_addButton ||
+            key == key_featuredStickers_addButton2 || key == key_featuredStickers_unread ||
+            key == key_profile_actionBackground || key == key_profile_verifiedBackground ||
+            key == key_chats_verifiedBackground || key == key_chats_archiveBackground ||
+            key == key_dialogButton || key == key_windowBackgroundWhiteBlueButton ||
             key == key_chat_messagePanelSend || key == key_progressCircle || key == key_dialogLineProgress ||
-            key == key_dialog_inlineProgress || key == key_player_progress || key == key_fastScrollActive ||
-            key == key_actionBarTabActiveText || key == key_actionBarTabLine || key == key_chat_recordedVoiceDot ||
-            key == key_chat_inAudioProgress || key == key_chat_inVoiceSeekbarFill || key == key_chat_inVoiceSeekbarSelected ||
+            key == key_dialog_inlineProgress || key == key_player_progress || key == key_player_buttonActive ||
+            key == key_fastScrollActive || key == key_actionBarTabActiveText || key == key_actionBarTabLine ||
+            key == key_chats_tabUnreadActiveBackground || key == key_chat_recordedVoiceDot ||
+            key == key_chat_recordedVoiceBackground || key == key_chat_inAudioProgress ||
+            key == key_chat_inVoiceSeekbarFill || key == key_chat_inVoiceSeekbarSelected ||
+            key == key_chat_inAudioSeekbarFill ||
             key == key_gift_ribbon || key == key_dialogInputFieldActivated || key == key_windowBackgroundWhiteInputFieldActivated ||
             key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteValueText ||
-            key == key_chats_menuItemIcon || key == key_chats_pinnedIcon || key == key_chats_archiveIcon ||
+            key == key_chats_menuItemIcon || key == key_chats_pinnedIcon ||
             key == key_chats_mentionIcon || key == key_chat_attachIcon || key == key_chat_messagePanelIcons ||
             key == key_chat_replyPanelIcons || key == key_chat_searchPanelIcons || key == key_chat_emojiBottomPanelIcon ||
-            key == key_chat_emojiPanelIconSelected || key == key_dialogIcon || key == key_dialogSearchIcon ||
+            key == key_chat_emojiPanelIconSelected || key == key_chat_emojiPanelStickerPackSelectorLine ||
+            key == key_chat_emojiPanelStickerSetNameHighlight || key == key_chat_emojiPanelNewTrending ||
+            key == key_dialogIcon || key == key_dialogSearchIcon ||
             key == key_files_folderIcon || key == key_windowBackgroundWhiteGrayIcon || key == key_windowBackgroundWhiteBlueIcon ||
             key == key_location_sendLocationIcon || key == key_location_sendLiveLocationIcon || key == key_location_actionIcon ||
-            key == key_sharedMedia_startStopLoadIcon || key == key_chat_goDownButton) {
+            key == key_location_actionActiveIcon || key == key_location_sendLocationBackground || key == key_location_liveLocationProgress ||
+            key == key_dialog_liveLocationProgress || key == key_sharedMedia_startStopLoadIcon || key == key_chat_goDownButton ||
+            key == key_chat_messagePanelCursor || key == key_chat_TextSelectionCursor || key == key_groupcreate_cursor ||
+            key == key_picker_badge || key == key_picker_enabledButton || key == key_chat_attachActiveTab ||
+            key == key_chat_attachGalleryBackground || key == key_chat_editMediaButton || key == key_chat_topPanelLine ||
+            key == key_profile_creatorIcon || key == key_profile_tabSelectedLine ||
+            key == key_stories_circle1 || key == key_stories_circle_dialog1 ||
+            key == key_glass_tabSelected || key == key_glass_tabSelectedText || key == key_telegram_color_dialogsLogo ||
+            key == key_avatar_backgroundSaved || key == key_avatar_backgroundCyan || key == key_avatar_backgroundBlue ||
+            key == key_voipgroup_overlayBlue1 || key == key_voipgroup_topPanelBlue1 || key == key_voipgroup_connectingProgress ||
+            key == key_voipgroup_unmuteButton || key == key_premiumGradient1 || key == key_premiumGradientBottomSheet1 ||
+            key == key_actionBarDefaultIcon || key == key_actionBarActionModeDefaultIcon || key == key_actionBarDefaultSubmenuItemIcon) {
             return 0xFF01BA53;
+        }
+
+        // Secondary Emerald / Dark Green Accents
+        if (key == key_avatar_background2Saved || key == key_avatar_background2Cyan || key == key_avatar_background2Blue ||
+            key == key_chat_recordedVoiceDarkerBackground || key == key_premiumGradientBackground1) {
+            return 0xFF0E381F;
         }
 
         // 5. Alpha & Semi-Transparent Accents
         if (key == key_switchTrackChecked) {
             return 0x6601BA53;
         }
-        if (key == key_chats_actionPressedBackground || key == key_dialogFloatingButtonPressed) {
+        if (key == key_switchTrackBlueSelectorChecked) {
+            return 0x2101BA53;
+        }
+        if (key == key_chats_actionPressedBackground || key == key_dialogFloatingButtonPressed || key == key_featuredStickers_addButtonPressed) {
             return 0xFF019B45;
         }
         if (key == key_dialogButtonSelector || key == key_files_folderIconBackground) {
             return 0x2001BA53;
         }
-        if (key == key_dialogLinkSelection || key == key_windowBackgroundWhiteLinkSelection) {
+        if (key == key_dialogLinkSelection || key == key_windowBackgroundWhiteLinkSelection ||
+            key == key_chat_linkSelectBackground || key == key_chat_textSelectBackground ||
+            key == key_chat_selectedBackground || key == key_contextProgressInner1) {
             return 0x3301BA53;
         }
         if (key == key_chat_inTextSelectionHighlight) {
@@ -9073,10 +9106,10 @@ public class Theme {
         if (key == key_chat_outBubbleSelected) {
             return 0xFF1C4F30;
         }
-        // High Contrast in Outgoing Bubble: Bright Mint #5EFFA8 (NEVER blends with dark forest green!)
+        // High Contrast in Outgoing Bubble: Bright Mint #5EFFA8
         if (key == key_chat_messageLinkOut || key == key_chat_outSentCheck || key == key_chat_outSentCheckSelected ||
             key == key_chat_outForwardedNameText || key == key_chat_outReplyNameText || key == key_chat_outReplyLine ||
-            key == key_chat_outPreviewInstantText ||
+            key == key_chat_outPreviewInstantText || key == key_chat_outTextSelectionCursor ||
             key == key_chat_outAudioProgress || key == key_chat_outVoiceSeekbarFill || key == key_chat_outVoiceSeekbarSelected) {
             return 0xFF5EFFA8;
         }
@@ -9087,28 +9120,33 @@ public class Theme {
             return 0xFF245736;
         }
 
-        // 7. Clickable Links & Accent Text (Legible Neon Emerald #10D067 on dark backgrounds)
+        // 7. Clickable Links, Quotes, Lines & Accent Text (Neon Emerald #10D067 on dark backgrounds)
         if (key == key_chat_messageLinkIn || key == key_chat_inForwardedNameText || key == key_chat_inReplyNameText ||
-            key == key_chat_inReplyLine || key == key_chat_inPreviewInstantText ||
+            key == key_chat_inReplyLine || key == key_chat_inPreviewLine || key == key_chat_inQuote ||
+            key == key_chat_inPreviewInstantText || key == key_chat_inAudioTitleText || key == key_chat_inContactNameText ||
+            key == key_chat_inFileNameText || key == key_chat_inViaBotNameText || key == key_chat_inSiteNameText ||
+            key == key_avatar_nameInMessageBlue || key == key_avatar_nameInMessageCyan ||
             key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteBlueText ||
             key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 ||
             key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueText5 ||
             key == key_windowBackgroundWhiteBlueText6 || key == key_windowBackgroundWhiteBlueText7 ||
             key == key_dialogTextLink || key == key_dialogTextBlue || key == key_dialogTextBlue2 ||
-            key == key_dialogTextBlue4) {
+            key == key_dialogTextBlue4 || key == key_stories_circle2 || key == key_stories_circle_dialog2 ||
+            key == key_profile_tabSelectedText || key == key_undo_cancelColor || key == key_voipgroup_overlayBlue2 ||
+            key == key_voipgroup_topPanelBlue2 || key == key_voipgroup_listeningText || key == key_location_sendLocationText) {
             return 0xFF10D067;
         }
 
         // 8. Texts: Primary White #FFFFFF
         if (key == key_actionBarDefaultTitle || key == key_chats_menuItemText || key == key_chat_messageTextOut ||
             key == key_chat_messageTextIn || key == key_windowBackgroundWhiteBlackText || key == key_dialogTextBlack ||
-            key == key_profile_title || key == key_chats_name) {
+            key == key_profile_title || key == key_chats_name || key == key_undo_infoColor) {
             return 0xFFFFFFFF;
         }
 
         // 9. Secondary & Date Texts
         if (key == key_chat_inTimeText || key == key_chats_message || key == key_windowBackgroundWhiteGrayText ||
-            key == key_dialogTextGray || key == key_dialogSearchHint) {
+            key == key_dialogTextGray || key == key_dialogSearchHint || key == key_chat_recordVoiceCancel) {
             return 0xFF9EACB2;
         }
         if (key == key_chats_date || key == key_windowBackgroundWhiteGrayText2) {
@@ -9752,7 +9790,7 @@ public class Theme {
     }
 
     public static Drawable createDefaultWallpaper(int w, int h) {
-        MotionBackgroundDrawable motionBackgroundDrawable = new MotionBackgroundDrawable(0xff18191d, 0xff102819, 0xff1f2228, 0xff0e2216, w != 0);
+        MotionBackgroundDrawable motionBackgroundDrawable = new MotionBackgroundDrawable(0xff18191d, 0xff202227, 0xff18191d, 0xff141518, w != 0);
         if (w <= 0 || h <= 0) {
             w = Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y);
             h = Math.max(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y);
