@@ -9052,16 +9052,16 @@ public class Theme {
             key == key_picker_badge || key == key_picker_enabledButton || key == key_chat_attachActiveTab ||
             key == key_chat_attachGalleryBackground || key == key_chat_editMediaButton || key == key_chat_topPanelLine ||
             key == key_profile_creatorIcon || key == key_profile_tabSelectedLine ||
-            key == key_stories_circle1 || key == key_stories_circle_dialog1 || key == key_stories_circle_close1 ||
+            key == key_stories_circle1 || key == key_stories_circle_dialog1 || key == key_stories_circle_closeFriends1 ||
             key == key_glass_tabSelected || key == key_glass_tabSelectedText || key == key_telegram_color_dialogsLogo ||
             key == key_avatar_backgroundSaved || key == key_avatar_backgroundCyan || key == key_avatar_backgroundBlue ||
             key == key_voipgroup_overlayBlue1 || key == key_voipgroup_topPanelBlue1 || key == key_voipgroup_connectingProgress ||
             key == key_voipgroup_unmuteButton || key == key_premiumGradient1 || key == key_premiumGradientBottomSheet1 ||
             key == key_actionBarDefaultIcon || key == key_actionBarActionModeDefaultIcon || key == key_actionBarDefaultSubmenuItemIcon ||
             key == key_chats_sentCheck || key == key_chats_sentReadCheck ||
-            key == key_chat_inLoader || key == key_chat_inLoaderSelected || key == key_chat_mediaLoader ||
+            key == key_chat_inLoader || key == key_chat_inLoaderSelected || key == key_chat_mediaLoaderPhoto || key == key_chat_mediaLoaderPhotoSelected ||
             key == key_chat_inMediaIcon || key == key_chat_msgIvButtonPrimaryIn || key == key_chat_msgIvButtonPrimaryOut ||
-            key == key_chat_botButtonText || key == key_chat_botProgress ||
+            key == key_chat_botButtonText ||
             key == key_chat_replyPanelLine || key == key_chat_inReplyLine || key == key_chat_inPreviewLine) {
             return 0xFF01BA53;
         }
@@ -9147,7 +9147,7 @@ public class Theme {
             key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueText5 ||
             key == key_windowBackgroundWhiteBlueText6 || key == key_windowBackgroundWhiteBlueText7 ||
             key == key_dialogTextLink || key == key_dialogTextBlue || key == key_dialogTextBlue2 ||
-            key == key_dialogTextBlue4 || key == key_stories_circle2 || key == key_stories_circle_dialog2 || key == key_stories_circle_close2 ||
+            key == key_dialogTextBlue4 || key == key_stories_circle2 || key == key_stories_circle_dialog2 || key == key_stories_circle_closeFriends2 ||
             key == key_profile_tabSelectedText || key == key_undo_cancelColor || key == key_voipgroup_overlayBlue2 ||
             key == key_voipgroup_topPanelBlue2 || key == key_voipgroup_listeningText || key == key_location_sendLocationText ||
             key == key_chat_replyPanelName || key == key_chat_addContact) {
@@ -9164,7 +9164,7 @@ public class Theme {
         // 9. Secondary & Date Texts
         if (key == key_chat_inTimeText || key == key_chats_message || key == key_windowBackgroundWhiteGrayText ||
             key == key_dialogTextGray || key == key_dialogSearchHint || key == key_chat_recordVoiceCancel ||
-            key == key_chat_replyPanelMessage) {
+            key == key_chat_topPanelMessage) {
             return 0xFF9EACB2;
         }
         if (key == key_chats_date || key == key_windowBackgroundWhiteGrayText2) {
