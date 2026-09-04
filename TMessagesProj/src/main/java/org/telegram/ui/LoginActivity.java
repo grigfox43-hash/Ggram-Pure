@@ -330,8 +330,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
     private Dialog permissionsShowDialog;
     private ArrayList<String> permissionsItems = new ArrayList<>();
     private ArrayList<String> permissionsShowItems = new ArrayList<>();
-    private boolean checkPermissions = true;
-    private boolean checkShowPermissions = true;
+    private boolean checkPermissions = false;
+    private boolean checkShowPermissions = false;
     private boolean newAccount;
     private boolean syncContacts = true;
     private boolean testBackend = false;
@@ -1508,8 +1508,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
         if (needFloatingButton) {
             if (page == VIEW_PHONE_INPUT) {
-                checkPermissions = true;
-                checkShowPermissions = true;
+                checkPermissions = false;
+                checkShowPermissions = false;
             }
             currentDoneType = DONE_TYPE_ACTION;
             showDoneButton(false, animated);
@@ -2866,8 +2866,23 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 FileLog.d("sim status = " + tm.getSimState());
             }
             if (codeField.length() == 0 || phoneField.length() == 0) {
-                onFieldError(phoneOutlineView, false);
-                return;
+                String fullPhone = phoneField.getText().toString().trim();
+                if (codeField.length() == 0 && fullPhone.length() >= 4) {
+                    for (int i = Math.min(4, fullPhone.length()); i >= 1; i--) {
+                        String testCode = fullPhone.substring(0, i);
+                        List<CountrySelectActivity.Country> list = codesMap.get(testCode);
+                        if (list != null && !list.isEmpty()) {
+                            codeField.setText(testCode);
+                            phoneField.setText(fullPhone.substring(i));
+                            break;
+                        }
+                    }
+                }
+                if (codeField.length() == 0 || phoneField.length() == 0) {
+                    onFieldError(phoneOutlineView, true);
+                    needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), getString(R.string.InvalidPhoneNumber));
+                    return;
+                }
             }
             String phoneNumber = "+" + codeField.getText() + " " + phoneField.getText();
             if (!confirmedNumber) {
@@ -2903,64 +2918,6 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                         currentDoneType = DONE_TYPE_FLOATING;
                         needShowProgress(0, false);
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && AndroidUtilities.isSimAvailable()) {
-                            boolean allowCall = getParentActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
-                            boolean allowCancelCall = getParentActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
-                            boolean allowReadCallLog = Build.VERSION.SDK_INT < Build.VERSION_CODES.P || getParentActivity().checkSelfPermission(Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED;
-                            boolean allowReadPhoneNumbers = Build.VERSION.SDK_INT < Build.VERSION_CODES.O || getParentActivity().checkSelfPermission(Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED;;
-                            if (codeField != null && "888".equals(codeField.getText())) {
-                                allowCall = true;
-                                allowCancelCall = true;
-                                allowReadCallLog = true;
-                                allowReadPhoneNumbers = true;
-                            }
-                            if (checkPermissions) {
-                                permissionsItems.clear();
-                                if (!allowCall) {
-                                    permissionsItems.add(Manifest.permission.READ_PHONE_STATE);
-                                }
-                                if (!allowCancelCall) {
-                                    permissionsItems.add(Manifest.permission.CALL_PHONE);
-                                }
-                                if (!allowReadCallLog) {
-                                    permissionsItems.add(Manifest.permission.READ_CALL_LOG);
-                                }
-                                if (!allowReadPhoneNumbers && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    permissionsItems.add(Manifest.permission.READ_PHONE_NUMBERS);
-                                }
-                                if (!permissionsItems.isEmpty()) {
-                                    SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-                                    if (preferences.getBoolean("firstlogin", true) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_CALL_LOG)) {
-                                        preferences.edit().putBoolean("firstlogin", false).commit();
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-
-                                        builder.setPositiveButton(getString("Continue", R.string.Continue), null);
-                                        int resId;
-                                        if (!allowCall && (!allowCancelCall || !allowReadCallLog)) {
-                                            builder.setMessage(getString("AllowReadCallAndLog", R.string.AllowReadCallAndLog));
-                                            resId = R.raw.calls_log;
-                                        } else if (!allowCancelCall || !allowReadCallLog) {
-                                            builder.setMessage(getString("AllowReadCallLog", R.string.AllowReadCallLog));
-                                            resId = R.raw.calls_log;
-                                        } else {
-                                            builder.setMessage(getString("AllowReadCall", R.string.AllowReadCall));
-                                            resId = R.raw.incoming_calls;
-                                        }
-                                        builder.setTopAnimation(resId, 46, false, Theme.getColor(Theme.key_dialogTopBackground));
-                                        permissionsDialog = showDialog(builder.create());
-                                        confirmedNumber = true;
-                                    } else {
-                                        try {
-                                            getParentActivity().requestPermissions(permissionsItems.toArray(new String[0]), 6);
-                                        } catch (Exception e) {
-                                            FileLog.e(e);
-                                        }
-                                    }
-                                    return;
-                                }
-                            }
-                        }
-
                         confirmView.animateProgress(()->{
                             confirmView.dismiss();
                             AndroidUtilities.runOnUIThread(()-> {
@@ -2984,59 +2941,10 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             boolean allowReadCallLog = true;
             boolean allowReadPhoneNumbers = true;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && simcardAvailable) {
-                allowCall = getParentActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
-                allowCancelCall = getParentActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
-                allowReadCallLog = Build.VERSION.SDK_INT < Build.VERSION_CODES.P || getParentActivity().checkSelfPermission(Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    allowReadPhoneNumbers = getParentActivity().checkSelfPermission(Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED;
-                }
-                if (checkPermissions) {
-                    permissionsItems.clear();
-                    if (!allowCall) {
-                        permissionsItems.add(Manifest.permission.READ_PHONE_STATE);
-                    }
-                    if (!allowCancelCall) {
-                        permissionsItems.add(Manifest.permission.CALL_PHONE);
-                    }
-                    if (!allowReadCallLog) {
-                        permissionsItems.add(Manifest.permission.READ_CALL_LOG);
-                    }
-                    if (!allowReadPhoneNumbers && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        permissionsItems.add(Manifest.permission.READ_PHONE_NUMBERS);
-                    }
-                    if (!permissionsItems.isEmpty()) {
-                        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-                        if (preferences.getBoolean("firstlogin", true) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_CALL_LOG)) {
-                            preferences.edit().putBoolean("firstlogin", false).commit();
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-
-                            builder.setPositiveButton(getString("Continue", R.string.Continue), null);
-                            int resId;
-                            if (!allowCall && (!allowCancelCall || !allowReadCallLog)) {
-                                builder.setMessage(getString("AllowReadCallAndLog", R.string.AllowReadCallAndLog));
-                                resId = R.raw.calls_log;
-                            } else if (!allowCancelCall || !allowReadCallLog) {
-                                builder.setMessage(getString("AllowReadCallLog", R.string.AllowReadCallLog));
-                                resId = R.raw.calls_log;
-                            } else {
-                                builder.setMessage(getString("AllowReadCall", R.string.AllowReadCall));
-                                resId = R.raw.incoming_calls;
-                            }
-                            builder.setTopAnimation(resId, 46, false, Theme.getColor(Theme.key_dialogTopBackground));
-                            permissionsDialog = showDialog(builder.create());
-                            confirmedNumber = true;
-                        } else {
-                            try {
-                                getParentActivity().requestPermissions(permissionsItems.toArray(new String[0]), 6);
-                            } catch (Exception e) {
-                                FileLog.e(e);
-                            }
-                        }
-                        return;
-                    }
-                }
-            }
+            allowCall = false;
+            allowCancelCall = false;
+            allowReadCallLog = false;
+            allowReadPhoneNumbers = false;
 
             if (countryState == COUNTRY_STATE_EMPTY) {
                 needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), getString("ChooseCountry", R.string.ChooseCountry));
@@ -3226,7 +3134,9 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                         } else if (error.text.contains("PHONE_NUMBER_FLOOD")) {
                             needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), getString("PhoneNumberFlood", R.string.PhoneNumberFlood));
                         } else if (error.text.contains("PHONE_NUMBER_BANNED")) {
-                                needShowInvalidAlert(LoginActivity.this, phone, phoneInputData, true);
+                            needShowInvalidAlert(LoginActivity.this, phone, phoneInputData, true);
+                        } else if (error.text.contains("PHONE_NUMBER_APP_SIGNUP_FORBIDDEN")) {
+                            needShowAlert(getString(R.string.AppName), "Telegram временно ограничивает регистрацию новых аккаунтов через сторонние клиенты. Пожалуйста, войдите в существующий аккаунт или зарегистрируйтесь через официальное приложение Telegram.");
                         } else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
                             needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), getString(R.string.InvalidCode));
                         } else if (error.text.contains("PHONE_CODE_EXPIRED")) {
@@ -3235,9 +3145,14 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                             needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), getString("CodeExpired", R.string.CodeExpired));
                         } else if (error.text.startsWith("FLOOD_WAIT")) {
                             needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), getString("FloodWait", R.string.FloodWait));
-                        } else if (error.code != -1000) {
-                            AlertsCreator.processError(currentAccount, error, LoginActivity.this, req, phoneInputData.phoneNumber);
+                        } else {
+                            Dialog d = AlertsCreator.processError(currentAccount, error, LoginActivity.this, req, phoneInputData.phoneNumber);
+                            if (d == null) {
+                                needShowAlert(getString(R.string.AppName), error.text);
+                            }
                         }
+                    } else if (error.code == -1000) {
+                        needShowAlert(getString(R.string.AppName), "Не удалось связаться с серверами Telegram (ошибка сети или тайм-аут). Проверьте интернет-соединение или включите встроенный прокси в настройках.");
                     }
                 }
                 if (!isRequestingFirebaseSms) {

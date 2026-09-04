@@ -33,6 +33,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Verify Release Keystore
+        run: |
+          if [ ! -f "TMessagesProj/config/ggram_release.jks" ]; then
+            echo "Generating release keystore..."
+            keytool -genkeypair -v -keystore "TMessagesProj/config/ggram_release.jks" -storepass "ggram2026release" -alias "ggram" -keypass "ggram2026release" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Ggram, OU=Ggram Pure, O=Ggram, L=Dubai, ST=Dubai, C=AE"
+          fi
+
       - name: Build Full Telegram APK
         run: ./gradlew :TMessagesProj_AppStandalone:assembleAfatStandalone --stacktrace
 
