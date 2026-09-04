@@ -43,12 +43,17 @@ jobs:
       - name: Download and Embed Vosk Russian Speech Model
         run: |
           mkdir -p TMessagesProj/src/main/assets/model-ru
+          mkdir -p TMessagesProj_AppStandalone/src/main/assets/model-ru
           curl -sSL "https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip" -o vosk-model.zip
           unzip -q vosk-model.zip
           cp -r vosk-model-small-ru-0.22/* TMessagesProj/src/main/assets/model-ru/
+          cp -r vosk-model-small-ru-0.22/* TMessagesProj_AppStandalone/src/main/assets/model-ru/
+          echo "vosk-ru-0.22" > TMessagesProj/src/main/assets/model-ru/uuid
+          echo "vosk-ru-0.22" > TMessagesProj_AppStandalone/src/main/assets/model-ru/uuid
           rm -rf vosk-model.zip vosk-model-small-ru-0.22
           echo "Vosk model successfully embedded into assets/model-ru:"
           ls -la TMessagesProj/src/main/assets/model-ru/
+          ls -la TMessagesProj_AppStandalone/src/main/assets/model-ru/
 
       - name: Build Full Telegram APK
         run: ./gradlew :TMessagesProj_AppStandalone:assembleAfatStandalone --stacktrace

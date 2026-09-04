@@ -1,6 +1,7 @@
 package org.ggram.ai;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -11,9 +12,17 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Utilities;
 import org.vosk.Model;
 import org.vosk.Recognizer;
-import org.vosk.android.StorageService;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * GgramVoiceToText - High-performance offline Speech-to-Text engine.
@@ -55,7 +64,7 @@ public class GgramVoiceToText {
             if (isInitializing) {
                 Utilities.globalQueue.postRunnable(() -> {
                     try {
-                        for (int i = 0; i < 50; i++) {
+                        for (int i = 0; i < 200; i++) {
                             Thread.sleep(100);
                             if (sharedModel != null) {
                                 if (callback != null) callback.onReady(sharedModel);
@@ -63,7 +72,7 @@ public class GgramVoiceToText {
                             }
                         }
                     } catch (InterruptedException ignored) {}
-                    if (callback != null) callback.onError(new Exception("Model initialization timed out"));
+                    if (callback != null) callback.onError(new Exception("Таймаут инициализации языковой модели"));
                 });
                 return;
             }
@@ -71,35 +80,247 @@ public class GgramVoiceToText {
             isInitializing = true;
         }
 
-        StorageService.unpack(context, "model-ru", "model", model -> {
-            synchronized (lock) {
-                sharedModel = model;
-                isInitializing = false;
-            }
-            Log.i(TAG, "Vosk offline Russian model loaded successfully from assets");
-            if (callback != null) callback.onReady(model);
-        }, exception -> {
-            synchronized (lock) {
-                isInitializing = false;
-            }
-            Log.e(TAG, "Failed to unpack Vosk model from assets", exception);
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                File targetDir = new File(context.getFilesDir(), "vosk-model-ru");
+                File finalModelFile = new File(targetDir, "am/final.mdl");
 
-            File fallbackDir = new File(context.getFilesDir(), "model");
-            if (fallbackDir.exists() && fallbackDir.isDirectory()) {
-                try {
-                    Model localModel = new Model(fallbackDir.getAbsolutePath());
+                // 1. Check if already extracted and valid
+                if (finalModelFile.exists() && finalModelFile.length() > 5000000) {
+                    Log.i(TAG, "Loading existing Vosk model from: " + targetDir.getAbsolutePath());
+                    Model model = new Model(targetDir.getAbsolutePath());
                     synchronized (lock) {
-                        sharedModel = localModel;
+                        sharedModel = model;
+                        isInitializing = false;
                     }
-                    if (callback != null) callback.onReady(localModel);
+                    if (callback != null) callback.onReady(model);
                     return;
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to load model from fallback directory", e);
                 }
-            }
 
-            if (callback != null) callback.onError(exception);
+                // 2. Try extracting from assets
+                boolean extracted = extractModelFromAssets(context, targetDir);
+                if (extracted && finalModelFile.exists() && finalModelFile.length() > 5000000) {
+                    Log.i(TAG, "Successfully unpacked Vosk model from assets: " + targetDir.getAbsolutePath());
+                    Model model = new Model(targetDir.getAbsolutePath());
+                    synchronized (lock) {
+                        sharedModel = model;
+                        isInitializing = false;
+                    }
+                    if (callback != null) callback.onReady(model);
+                    return;
+                }
+
+                // 3. Fallback: Check standard storage locations
+                File legacyDir = new File(context.getFilesDir(), "model/model-ru");
+                if (new File(legacyDir, "am/final.mdl").exists()) {
+                    Model model = new Model(legacyDir.getAbsolutePath());
+                    synchronized (lock) {
+                        sharedModel = model;
+                        isInitializing = false;
+                    }
+                    if (callback != null) callback.onReady(model);
+                    return;
+                }
+
+                File extDir = new File(context.getExternalFilesDir(null), "model/model-ru");
+                if (new File(extDir, "am/final.mdl").exists()) {
+                    Model model = new Model(extDir.getAbsolutePath());
+                    synchronized (lock) {
+                        sharedModel = model;
+                        isInitializing = false;
+                    }
+                    if (callback != null) callback.onReady(model);
+                    return;
+                }
+
+                // 4. Autonomous download if model is missing
+                Log.w(TAG, "Model not found locally, downloading Vosk small-ru model...");
+                AndroidUtilities.runOnUIThread(() -> {
+                    try {
+                        org.telegram.ui.Components.BulletinFactory.getGlobal().createSimpleBulletin(
+                            org.telegram.messenger.R.raw.ic_download,
+                            "Загрузка языковой модели Vosk..."
+                        ).show();
+                    } catch (Exception ignored) {}
+                });
+
+                downloadAndExtractModel(targetDir);
+                if (finalModelFile.exists()) {
+                    Model model = new Model(targetDir.getAbsolutePath());
+                    synchronized (lock) {
+                        sharedModel = model;
+                        isInitializing = false;
+                    }
+                    if (callback != null) callback.onReady(model);
+                    return;
+                }
+
+                throw new IOException("Не удалось загрузить или распаковать модель Vosk");
+
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to initialize Vosk model", e);
+                synchronized (lock) {
+                    isInitializing = false;
+                }
+                if (callback != null) callback.onError(e);
+            }
         });
+    }
+
+    private static boolean extractModelFromAssets(Context context, File targetDir) {
+        AssetManager am = context.getAssets();
+        String[] prefixes = new String[]{"model-ru", "models/model-ru", "assets/model-ru"};
+        String foundPrefix = null;
+        for (String prefix : prefixes) {
+            try {
+                String[] list = am.list(prefix);
+                if (list != null && list.length > 0) {
+                    foundPrefix = prefix;
+                    break;
+                }
+            } catch (IOException ignored) {}
+        }
+        if (foundPrefix == null) {
+            Log.w(TAG, "No model-ru folder found in assets");
+            return false;
+        }
+
+        try {
+            if (!targetDir.exists()) {
+                targetDir.mkdirs();
+            }
+            copyAssetFolder(am, foundPrefix, targetDir);
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error copying model assets", e);
+            return false;
+        }
+    }
+
+    private static void copyAssetFolder(AssetManager am, String srcPath, File destDir) throws IOException {
+        String[] files = am.list(srcPath);
+        if (files == null || files.length == 0) {
+            copyAssetFile(am, srcPath, new File(destDir.getParentFile(), new File(srcPath).getName()));
+            return;
+        }
+
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+
+        for (String file : files) {
+            String subSrc = srcPath.isEmpty() ? file : srcPath + "/" + file;
+            String[] subFiles = am.list(subSrc);
+            File subDest = new File(destDir, file);
+            if (subFiles != null && subFiles.length > 0) {
+                copyAssetFolder(am, subSrc, subDest);
+            } else {
+                copyAssetFile(am, subSrc, subDest);
+            }
+        }
+    }
+
+    private static void copyAssetFile(AssetManager am, String srcPath, File destFile) throws IOException {
+        File parent = destFile.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = am.open(srcPath);
+            out = new FileOutputStream(destFile);
+            byte[] buf = new byte[65536];
+            int read;
+            while ((read = in.read(buf)) != -1) {
+                out.write(buf, 0, read);
+            }
+            out.flush();
+        } finally {
+            if (in != null) {
+                try { in.close(); } catch (Exception ignored) {}
+            }
+            if (out != null) {
+                try { out.close(); } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    private static void downloadAndExtractModel(File targetDir) throws IOException {
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+        File tempZip = new File(targetDir.getParentFile(), "vosk_temp.zip");
+        URL url = new URL("https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(20000);
+        conn.setReadTimeout(60000);
+        conn.setRequestProperty("User-Agent", "Ggram/1.3.0");
+        conn.connect();
+
+        InputStream in = null;
+        FileOutputStream fos = null;
+        try {
+            in = conn.getInputStream();
+            fos = new FileOutputStream(tempZip);
+            byte[] buffer = new byte[65536];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+            }
+            fos.flush();
+        } finally {
+            if (in != null) {
+                try { in.close(); } catch (Exception ignored) {}
+            }
+            if (fos != null) {
+                try { fos.close(); } catch (Exception ignored) {}
+            }
+        }
+
+        // Unzip
+        ZipInputStream zis = null;
+        try {
+            zis = new ZipInputStream(new FileInputStream(tempZip));
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                if (name.startsWith("vosk-model-small-ru-0.22/")) {
+                    name = name.substring("vosk-model-small-ru-0.22/".length());
+                }
+                if (name.isEmpty()) continue;
+
+                File outFile = new File(targetDir, name);
+                if (entry.isDirectory()) {
+                    outFile.mkdirs();
+                } else {
+                    File p = outFile.getParentFile();
+                    if (p != null && !p.exists()) p.mkdirs();
+                    FileOutputStream entryFos = null;
+                    try {
+                        entryFos = new FileOutputStream(outFile);
+                        byte[] buf = new byte[65536];
+                        int r;
+                        while ((r = zis.read(buf)) != -1) {
+                            entryFos.write(buf, 0, r);
+                        }
+                        entryFos.flush();
+                    } finally {
+                        if (entryFos != null) {
+                            try { entryFos.close(); } catch (Exception ignored) {}
+                        }
+                    }
+                }
+                zis.closeEntry();
+            }
+        } finally {
+            if (zis != null) {
+                try { zis.close(); } catch (Exception ignored) {}
+            }
+            if (tempZip.exists()) {
+                tempZip.delete();
+            }
+        }
     }
 
     public static void transcribeVoiceMessage(Context context, File audioFile, TranscriptionCallback callback) {
@@ -172,7 +393,8 @@ public class GgramVoiceToText {
                     public void onError(Exception e) {
                         Log.e(TAG, "Model error: " + e.getMessage());
                         if (callback != null) {
-                            AndroidUtilities.runOnUIThread(() -> callback.onError("Языковая модель не найдена в приложении"));
+                            String msg = e != null && e.getMessage() != null ? e.getMessage() : "Языковая модель не найдена в приложении";
+                            AndroidUtilities.runOnUIThread(() -> callback.onError(msg));
                         }
                     }
                 });
