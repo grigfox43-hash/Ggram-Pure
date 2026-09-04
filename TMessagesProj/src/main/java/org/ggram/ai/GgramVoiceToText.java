@@ -137,10 +137,7 @@ public class GgramVoiceToText {
                 Log.w(TAG, "Model not found locally, downloading Vosk small-ru model...");
                 AndroidUtilities.runOnUIThread(() -> {
                     try {
-                        org.telegram.ui.Components.BulletinFactory.getGlobal().createSimpleBulletin(
-                            org.telegram.messenger.R.raw.ic_download,
-                            "Загрузка языковой модели Vosk..."
-                        ).show();
+                        android.widget.Toast.makeText(context, "Загрузка языковой модели Vosk...", android.widget.Toast.LENGTH_LONG).show();
                     } catch (Exception ignored) {}
                 });
 
