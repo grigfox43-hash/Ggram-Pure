@@ -1621,7 +1621,7 @@ public class MessagesController extends BaseController implements NotificationCe
         qrLoginCamera = mainPreferences.getBoolean("qrLoginCamera", true);
         saveGifsWithStickers = mainPreferences.getBoolean("saveGifsWithStickers", false);
         filtersEnabled = mainPreferences.getBoolean("filtersEnabled", false);
-        getfileExperimentalParams = mainPreferences.getBoolean("getfileExperimentalParams", true);
+        getfileExperimentalParams = org.ggram.config.GgramConfig.isDownloadBoosterEnabled || mainPreferences.getBoolean("getfileExperimentalParams", false);
         smsjobsStickyNotificationEnabled = mainPreferences.getBoolean("smsjobsStickyNotificationEnabled", false);
         showFiltersTooltip = mainPreferences.getBoolean("showFiltersTooltip", false);
         autoarchiveAvailable = mainPreferences.getBoolean("autoarchiveAvailable", false);
@@ -1632,9 +1632,9 @@ public class MessagesController extends BaseController implements NotificationCe
         ringtoneSizeMax = mainPreferences.getInt("ringtoneSizeMax", 1024_00);
         pmReadDateExpirePeriod = mainPreferences.getInt("pmReadDateExpirePeriod", 7 * 86400);
         suggestStickersApiOnly = mainPreferences.getBoolean("suggestStickersApiOnly", false);
-        roundVideoSize = Math.max(640, mainPreferences.getInt("roundVideoSize", 640));
-        roundVideoBitrate = Math.max(2500, mainPreferences.getInt("roundVideoBitrate", 2500));
-        roundAudioBitrate = Math.max(128, mainPreferences.getInt("roundAudioBitrate", 128));
+        roundVideoSize = org.ggram.config.GgramConfig.isHqRoundVideo ? 640 : mainPreferences.getInt("roundVideoSize", 384);
+        roundVideoBitrate = org.ggram.config.GgramConfig.isHqRoundVideo ? 2500 : mainPreferences.getInt("roundVideoBitrate", 1000);
+        roundAudioBitrate = org.ggram.config.GgramConfig.isHqRoundVideo ? 128 : mainPreferences.getInt("roundAudioBitrate", 64);
         pendingSuggestions = mainPreferences.getStringSet("pendingSuggestions", null);
         dismissedSuggestions = mainPreferences.getStringSet("dismissedSuggestions", null);
         channelsLimitDefault = mainPreferences.getInt("channelsLimitDefault", 500);
@@ -1684,8 +1684,8 @@ public class MessagesController extends BaseController implements NotificationCe
         giftAttachMenuIcon = mainPreferences.getBoolean("giftAttachMenuIcon", false);
         giftTextFieldIcon = mainPreferences.getBoolean("giftTextFieldIcon", false);
         checkResetLangpack = mainPreferences.getInt("checkResetLangpack", 0);
-        smallQueueMaxActiveOperations = Math.max(25, mainPreferences.getInt("smallQueueMaxActiveOperations", 25));
-        largeQueueMaxActiveOperations = Math.max(8, mainPreferences.getInt("largeQueueMaxActiveOperations", 8));
+        smallQueueMaxActiveOperations = org.ggram.config.GgramConfig.isFastAvatarsEnabled ? 25 : mainPreferences.getInt("smallQueueMaxActiveOperations", 5);
+        largeQueueMaxActiveOperations = org.ggram.config.GgramConfig.isDownloadBoosterEnabled ? 8 : mainPreferences.getInt("largeQueueMaxActiveOperations", 2);
         stealthModeFuture = mainPreferences.getInt("stories_stealth_future_period", 25 * 60);
         storiesChangelogUserId = mainPreferences.getLong("stories_changelog_user_id", 777000);
         giveawayAddPeersMax = mainPreferences.getLong("giveaway_add_peers_max", 10);

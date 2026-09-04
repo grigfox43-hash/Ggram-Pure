@@ -9821,7 +9821,12 @@ public class ChatActivity extends BaseFragment implements
         translateButton = new TranslateButton(getContext(), this, themeDelegate) {
             @Override
             protected void onButtonClick() {
-                getMessagesController().getTranslateController().toggleTranslatingDialog(getDialogId());
+                if (org.ggram.config.GgramConfig.isRealtimeTranslateEnabled || getUserConfig().isPremium() || (currentChat != null && currentChat.autotranslation)) {
+                    getMessagesController().getTranslateController().toggleTranslatingDialog(getDialogId());
+                } else {
+                    MessagesController.getNotificationsSettings(currentAccount).edit().putInt("dialog_show_translate_count" + getDialogId(), 14).commit();
+                    showDialog(new PremiumFeatureBottomSheet(ChatActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_TRANSLATIONS, false));
+                }
                 updateTopPanel(true);
             }
 
@@ -10402,6 +10407,11 @@ public class ChatActivity extends BaseFragment implements
             @Override
             public void onReactionClicked(View view, ReactionsLayoutInBubble.VisibleReaction visibleReaction, boolean longpress, boolean addToRecent) {
                 if (tagSelector == null) return;
+                if (getDialogId() == getUserConfig().getClientUserId() && !getUserConfig().isPremium() && !org.ggram.config.GgramConfig.isSavedTagsEnabled) {
+                    new PremiumFeatureBottomSheet(ChatActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true).show();
+                    clearSelectionMode(false);
+                    return;
+                }
                 boolean updateFilteredMessages = false;
                 boolean notifyFilteredMessages = false;
                 boolean remove = tagSelector.getSelectedReactions().contains(visibleReaction);
@@ -32092,7 +32102,15 @@ public class ChatActivity extends BaseFragment implements
                 reactionsLayout = new ReactionsContainerLayout(tags ? ReactionsContainerLayout.TYPE_TAGS : ReactionsContainerLayout.TYPE_DEFAULT, ChatActivity.this, contentView.getContext(), currentAccount, getResourceProvider());
                 reactionsLayout.setBackgroundFactory(scrimBlur3Factory, BlurredBackgroundProviderImpl.messageMenuReactionsBackground(resourceProvider));
                 if (tags) {
-                    reactionsLayout.setHint(LocaleController.getString(R.string.SavedTagReactionsHint2));
+                    reactionsLayout.setHint((getUserConfig().isPremium() || org.ggram.config.GgramConfig.isSavedTagsEnabled) ? LocaleController.getString(R.string.SavedTagReactionsHint2) : AndroidUtilities.replaceSingleTag(LocaleController.getString(R.string.SavedTagReactionsPremiumHint), Theme.key_windowBackgroundWhiteBlueText2, 0, () -> {
+                        closeMenu(false);
+                        PremiumFeatureBottomSheet sheet = new PremiumFeatureBottomSheet(ChatActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true);
+                        sheet.setDimBehind(false);
+                        sheet.setOnHideListener(d -> {
+                            dimBehindView(false);
+                        });
+                        sheet.show();
+                    }));
                 }
                 if (isReactionsAvailable && (!tags || !getMessagesController().premiumFeaturesBlocked())) {
                     int pad = 22;
@@ -32837,10 +32855,10 @@ public class ChatActivity extends BaseFragment implements
                 overlay.getLocationInWindow(loc2);
                 overlay.tap(loc[0] - loc2[0] + x, loc[1] - loc2[1] + y + (cell instanceof ChatMessageCell ? ((ChatMessageCell) cell).starsPriceTopPadding : 0), false, true);
             }
+        if (getDialogId() == getUserConfig().getClientUserId() && !getUserConfig().isPremium() && !org.ggram.config.GgramConfig.isSavedTagsEnabled && primaryMessage.messageOwner != null && (primaryMessage.messageOwner.reactions == null || (primaryMessage.messageOwner.reactions.reactions_as_tags || primaryMessage.messageOwner.reactions.results.isEmpty()))) {
+            new PremiumFeatureBottomSheet(ChatActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true).show();
             return;
         }
-
-        
 
         if (!primaryMessage.hasChosenReaction(visibleReaction) && (!(currentChat == null || ChatObject.isChannelAndNotMegaGroup(currentChat) || ChatObject.canUserDoAction(currentChat, ChatObject.ACTION_SEND_REACTIONS)))) {
             BulletinFactory.of(this).createSimpleBulletin(R.raw.e_hand_2, getString(R.string.SendReactionsIsRestrictedInThisChat)).show();
@@ -45199,7 +45217,11 @@ public class ChatActivity extends BaseFragment implements
             return;
         }
         if (messageObject == null) return;
-        
+        if (getUserConfig().getClientUserId() == getDialogId() && messageObject.areTags() && !getUserConfig().isPremium() && !org.ggram.config.GgramConfig.isSavedTagsEnabled) {
+            if (longpress) return;
+            new PremiumFeatureBottomSheet(ChatActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true).show();
+            return;
+        }
         if (longpress && reaction.reaction instanceof TLRPC.TL_reactionPaid) {
             cell.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             ArrayList<TLRPC.MessageReactor> reactors = null;

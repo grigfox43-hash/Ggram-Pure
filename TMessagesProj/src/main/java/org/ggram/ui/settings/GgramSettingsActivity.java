@@ -120,9 +120,16 @@ public class GgramSettingsActivity extends BaseFragment {
         items.add(Item.check("Скрыть блок историй (Stories)", "Убрать кружочки историй с главного экрана диалогов", "hide_stories", GgramConfig.isHideStories));
         items.add(Item.check("Блокировка рекламы и спонсоров", "Отключение рекламных сообщений в каналах и поиске", "adblock_enabled", GgramConfig.isAdBlockEnabled));
         items.add(Item.check("Быстрый просмотр ID и метаданных", "Отображение User ID, Channel ID, Message ID и DC", "show_metadata", GgramConfig.isShowMetadataDetails));
-        items.add(Item.info("Очистка экрана от лишних элементов и защита от случайных действий."));
+        // 6. Premium Free Features
+        items.add(Item.header("ПРЕМИУМ-ФУНКЦИИ (БЕСПЛАТНО)"));
+        items.add(Item.check("Перевод чатов в реальном времени", "Мгновенный перевод сообщений на лету без Telegram Premium", "realtime_translate", GgramConfig.isRealtimeTranslateEnabled));
+        items.add(Item.check("Ускоритель загрузки (Booster)", "Скачивание файлов в 8 параллельных потоков блоками по 512 КБ", "download_booster", GgramConfig.isDownloadBoosterEnabled));
+        items.add(Item.check("Быстрая загрузка аватарок", "Увеличение параллельных потоков загрузки иконок чатов до 25", "fast_avatars", GgramConfig.isFastAvatarsEnabled));
+        items.add(Item.check("Теги в «Избранном»", "Разметка сообщений эмодзи-тегами и фильтрация по категориям", "saved_tags", GgramConfig.isSavedTagsEnabled));
+        items.add(Item.check("HD-видеокружочки", "Высокая четкость 640x640 и битрейт 2.5 Мбит/с со звуком 128 кбит/с", "hq_round_video", GgramConfig.isHqRoundVideo));
+        items.add(Item.info("Разблокировка официальных возможностей Telegram Premium на стороне клиента."));
 
-        // 6. Proxy
+        // 7. Proxy
         items.add(Item.header("СЕТЬ И ПРОКСИ"));
         items.add(Item.action("Настройки прокси Ggram", "MTProto, Shadowsocks, Socks5, V2Ray с авто-пином"));
         items.add(Item.info("Ggram Pure v1.3.0 • Emerald Obsidian Edition"));
@@ -165,6 +172,16 @@ public class GgramSettingsActivity extends BaseFragment {
                     GgramConfig.setHideBottomBar(newVal);
                     NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.updateInterfaces, org.telegram.messenger.MessagesController.UPDATE_MASK_ALL);
                     NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.mainUserInfoChanged);
+                } else if ("download_booster".equals(item.key) || "fast_avatars".equals(item.key) || "hq_round_video".equals(item.key)) {
+                    boolean newVal = !item.checked;
+                    GgramConfig.toggle(item.key, newVal);
+                    org.telegram.messenger.MessagesController mc = org.telegram.messenger.MessagesController.getInstance(currentAccount);
+                    mc.smallQueueMaxActiveOperations = GgramConfig.isFastAvatarsEnabled ? 25 : 5;
+                    mc.largeQueueMaxActiveOperations = GgramConfig.isDownloadBoosterEnabled ? 8 : 2;
+                    mc.getfileExperimentalParams = GgramConfig.isDownloadBoosterEnabled;
+                    mc.roundVideoSize = GgramConfig.isHqRoundVideo ? 640 : 384;
+                    mc.roundVideoBitrate = GgramConfig.isHqRoundVideo ? 2500 : 1000;
+                    mc.roundAudioBitrate = GgramConfig.isHqRoundVideo ? 128 : 64;
                 } else {
                     boolean newVal = !item.checked;
                     GgramConfig.toggle(item.key, newVal);

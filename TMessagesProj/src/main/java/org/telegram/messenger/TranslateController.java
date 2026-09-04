@@ -91,14 +91,14 @@ public class TranslateController extends BaseController {
     }
 
     public boolean isFeatureAvailable() {
-        return isChatTranslateEnabled();
+        return isChatTranslateEnabled() && (org.ggram.config.GgramConfig.isRealtimeTranslateEnabled || UserConfig.getInstance(currentAccount).isPremium());
     }
 
     public boolean isFeatureAvailable(long dialogId) {
         if (!isChatTranslateEnabled()) {
             return false;
         }
-        return true;
+        return org.ggram.config.GgramConfig.isRealtimeTranslateEnabled || UserConfig.getInstance(currentAccount).isPremium();
     }
 
     private Boolean chatTranslateEnabled;

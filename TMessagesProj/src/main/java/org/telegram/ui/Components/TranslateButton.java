@@ -111,9 +111,13 @@ public class TranslateButton extends FrameLayout implements Theme.Colorable {
 
         menuView = new ImageView(context);
         menuView.setScaleType(ImageView.ScaleType.CENTER);
-        menuView.setImageResource(R.drawable.msg_mini_customize);
         menuView.setOnClickListener(e -> {
-            onMenuClick();
+            final TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
+            if (org.ggram.config.GgramConfig.isRealtimeTranslateEnabled || UserConfig.getInstance(currentAccount).isPremium() || chat != null && chat.autotranslation) {
+                onMenuClick();
+            } else {
+                onCloseClick();
+            }
         });
         addView(menuView, LayoutHelper.createFrame(30, 30, Gravity.RIGHT | Gravity.CENTER_VERTICAL, 0, 0, 7, 0));
 
@@ -292,7 +296,7 @@ public class TranslateButton extends FrameLayout implements Theme.Colorable {
             popupLayout.getSwipeBack().openForeground(swipeBackIndex);
         });
 
-        if (detectedLanguageNameAccusative != null) {
+        if ((org.ggram.config.GgramConfig.isRealtimeTranslateEnabled || UserConfig.getInstance(currentAccount).isPremium()) && detectedLanguageNameAccusative != null) {
             final ActionBarMenuSubItem dontTranslateButton = new ActionBarMenuSubItem(getContext(), false, false, resourcesProvider);
             String text;
             if (accusative[0]) {
@@ -407,7 +411,7 @@ public class TranslateButton extends FrameLayout implements Theme.Colorable {
             }
             textView.setText(TextUtils.concat(translateIcon, " ", text));
         }
-        menuView.setImageResource(R.drawable.msg_mini_customize);
+        menuView.setImageResource(org.ggram.config.GgramConfig.isRealtimeTranslateEnabled || UserConfig.getInstance(currentAccount).isPremium() || chat != null && chat.autotranslation ? R.drawable.msg_mini_customize : R.drawable.msg_close);
     }
 
     public static void showCocoonAlert(Context context, Theme.ResourcesProvider resourcesProvider) {

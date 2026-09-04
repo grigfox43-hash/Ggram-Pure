@@ -286,7 +286,11 @@ public class FileLoadOperation {
     }
 
     private void updateParams() {
-        if (!forceSmallChunk) {
+        if (!forceSmallChunk && org.ggram.config.GgramConfig.isDownloadBoosterEnabled) {
+            downloadChunkSizeBig = 1024 * 512;
+            maxDownloadRequests = 8;
+            maxDownloadRequestsBig = 8;
+        } else if ((preloadPrefixSize > 0 || MessagesController.getInstance(currentAccount).getfileExperimentalParams) && !forceSmallChunk) {
             downloadChunkSizeBig = 1024 * 512;
             maxDownloadRequests = 8;
             maxDownloadRequestsBig = 8;

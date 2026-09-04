@@ -269,6 +269,10 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
             if (position < 0 || position >= items.size()) {
                 return;
             }
+            if (!org.ggram.config.GgramConfig.isSavedTagsEnabled && !UserConfig.getInstance(currentAccount).isPremium()) {
+                new PremiumFeatureBottomSheet(fragment, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true).show();
+                return;
+            }
             long hash = items.get(position).hash();
             if (!setFilter(chosen == hash ? null : items.get(position).reaction)) {
                 return;
@@ -298,6 +302,10 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
         listView.setOnItemLongClickListener((view, position) -> {
             if (position < 0 || position >= items.size())
                 return false;
+            if (!org.ggram.config.GgramConfig.isSavedTagsEnabled && !UserConfig.getInstance(currentAccount).isPremium()) {
+                new PremiumFeatureBottomSheet(fragment, PremiumPreviewFragment.PREMIUM_FEATURE_SAVED_TAGS, true).show();
+                return true;
+            }
             TagButton btn = (TagButton) view;
             if (btn.reactionButton != null) {
                 btn.reactionButton.startAnimation();
@@ -644,7 +652,7 @@ public class SearchTagsList extends FrameLayout implements NotificationCenter.No
             adapter.notifyDataSetChanged();
         }
 
-        if (shownPremiumLayout = false) {
+        if (shownPremiumLayout = (!org.ggram.config.GgramConfig.isSavedTagsEnabled && !UserConfig.getInstance(currentAccount).isPremium())) {
             createPremiumLayout();
             if (!notify) {
                 premiumLayout.setVisibility(View.VISIBLE);

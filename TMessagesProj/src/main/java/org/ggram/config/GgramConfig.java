@@ -55,6 +55,12 @@ public class GgramConfig {
     public static boolean isAntiRecallEdits = true;
     public static boolean isAntiRecallMedia = true;
 
+    // Premium Free Features
+    public static boolean isRealtimeTranslateEnabled = true;
+    public static boolean isDownloadBoosterEnabled = true;
+    public static boolean isFastAvatarsEnabled = true;
+    public static boolean isSavedTagsEnabled = true;
+
     // Chats & Ergonomics
     public static boolean isUnlimitedPins = true;
     public static boolean isConfirmDialogDelete = true;
@@ -98,6 +104,11 @@ public class GgramConfig {
         isAntiRecallDeleted = prefs.getBoolean("antirecall_deleted", true);
         isAntiRecallEdits = prefs.getBoolean("antirecall_edits", true);
         isAntiRecallMedia = prefs.getBoolean("antirecall_media", true);
+
+        isRealtimeTranslateEnabled = prefs.getBoolean("realtime_translate", true);
+        isDownloadBoosterEnabled = prefs.getBoolean("download_booster", true);
+        isFastAvatarsEnabled = prefs.getBoolean("fast_avatars", true);
+        isSavedTagsEnabled = prefs.getBoolean("saved_tags", true);
 
         isUnlimitedPins = prefs.getBoolean("unlimited_pins", true);
         isConfirmDialogDelete = prefs.getBoolean("confirm_delete", true);
