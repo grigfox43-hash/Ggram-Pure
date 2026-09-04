@@ -8995,7 +8995,7 @@ public class Theme {
         // 1. Dark Charcoal Background: #18191D
         if (key == key_windowBackgroundWhite || key == key_windowBackgroundGray || key == key_chats_menuBackground ||
             key == key_chat_wallpaper || key == key_chat_wallpaper_gradient_to1 || key == key_chat_wallpaper_gradient_to2 ||
-            key == key_chat_wallpaper_gradient_to3 || key == key_windowBackgroundWhiteGray) {
+            key == key_chat_wallpaper_gradient_to3) {
             return 0xFF18191D;
         }
 
@@ -9016,11 +9016,11 @@ public class Theme {
         }
 
         // 4. Primary Emerald Accent: #01BA53
-        if (key == key_chats_actionBackground || key == key_dialogFloatingButton || key == key_chats_actionUnreadBackground ||
+        if (key == key_chats_actionBackground || key == key_dialogFloatingButton ||
             key == key_chats_unreadCounter || key == key_chats_unreadCounterMuted || key == key_chat_goDownButtonCounterBackground ||
             key == key_checkboxCheck || key == key_dialogRoundCheckBox || key == key_dialogCheckboxSquareBackground ||
             key == key_dialogRadioBackgroundChecked || key == key_radioBackgroundChecked || key == key_windowBackgroundChecked ||
-            key == key_switchThumbChecked || key == key_switch2TrackChecked || key == key_featuredStickers_addButton ||
+            key == key_switch2TrackChecked || key == key_featuredStickers_addButton ||
             key == key_profile_actionBackground || key == key_dialogButton || key == key_windowBackgroundWhiteBlueButton ||
             key == key_chat_messagePanelSend || key == key_progressCircle || key == key_dialogLineProgress ||
             key == key_dialog_inlineProgress || key == key_player_progress || key == key_fastScrollActive ||
@@ -9051,10 +9051,10 @@ public class Theme {
         if (key == key_dialogLinkSelection || key == key_windowBackgroundWhiteLinkSelection) {
             return 0x3301BA53;
         }
-        if (key == key_chat_inTextSelectionHighlight || key == key_chat_inLinkSelectHighlight) {
+        if (key == key_chat_inTextSelectionHighlight) {
             return 0x4401BA53;
         }
-        if (key == key_chat_outTextSelectionHighlight || key == key_chat_outLinkSelectHighlight) {
+        if (key == key_chat_outTextSelectionHighlight) {
             return 0x445EFFA8;
         }
 
@@ -9076,7 +9076,7 @@ public class Theme {
         // High Contrast in Outgoing Bubble: Bright Mint #5EFFA8 (NEVER blends with dark forest green!)
         if (key == key_chat_messageLinkOut || key == key_chat_outSentCheck || key == key_chat_outSentCheckSelected ||
             key == key_chat_outForwardedNameText || key == key_chat_outReplyNameText || key == key_chat_outReplyLine ||
-            key == key_chat_outReplyMedia || key == key_chat_outPreviewInstantText ||
+            key == key_chat_outPreviewInstantText ||
             key == key_chat_outAudioProgress || key == key_chat_outVoiceSeekbarFill || key == key_chat_outVoiceSeekbarSelected) {
             return 0xFF5EFFA8;
         }
@@ -9089,13 +9089,13 @@ public class Theme {
 
         // 7. Clickable Links & Accent Text (Legible Neon Emerald #10D067 on dark backgrounds)
         if (key == key_chat_messageLinkIn || key == key_chat_inForwardedNameText || key == key_chat_inReplyNameText ||
-            key == key_chat_inReplyLine || key == key_chat_inReplyMedia || key == key_chat_inPreviewInstantText ||
+            key == key_chat_inReplyLine || key == key_chat_inPreviewInstantText ||
             key == key_windowBackgroundWhiteLinkText || key == key_windowBackgroundWhiteBlueText ||
             key == key_windowBackgroundWhiteBlueText2 || key == key_windowBackgroundWhiteBlueText3 ||
             key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueText5 ||
             key == key_windowBackgroundWhiteBlueText6 || key == key_windowBackgroundWhiteBlueText7 ||
             key == key_dialogTextLink || key == key_dialogTextBlue || key == key_dialogTextBlue2 ||
-            key == key_dialogTextBlue4 || key == key_chat_adminText) {
+            key == key_dialogTextBlue4) {
             return 0xFF10D067;
         }
 
