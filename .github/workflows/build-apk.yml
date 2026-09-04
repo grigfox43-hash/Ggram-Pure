@@ -40,6 +40,16 @@ jobs:
             keytool -genkeypair -v -keystore "TMessagesProj/config/ggram_release.jks" -storepass "ggram2026release" -alias "ggram" -keypass "ggram2026release" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Ggram, OU=Ggram Pure, O=Ggram, L=Dubai, ST=Dubai, C=AE"
           fi
 
+      - name: Download and Embed Vosk Russian Speech Model
+        run: |
+          mkdir -p TMessagesProj/src/main/assets/model-ru
+          curl -sSL "https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip" -o vosk-model.zip
+          unzip -q vosk-model.zip
+          cp -r vosk-model-small-ru-0.22/* TMessagesProj/src/main/assets/model-ru/
+          rm -rf vosk-model.zip vosk-model-small-ru-0.22
+          echo "Vosk model successfully embedded into assets/model-ru:"
+          ls -la TMessagesProj/src/main/assets/model-ru/
+
       - name: Build Full Telegram APK
         run: ./gradlew :TMessagesProj_AppStandalone:assembleAfatStandalone --stacktrace
 

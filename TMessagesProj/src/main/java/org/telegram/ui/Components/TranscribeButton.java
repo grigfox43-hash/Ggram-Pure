@@ -42,6 +42,11 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.TranslateController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.FileLoader;
+import org.ggram.ai.GgramVoiceToText;
+import org.ggram.config.GgramConfig;
+import java.io.File;
 import org.telegram.messenger.utils.DrawableUtils;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -688,6 +693,75 @@ public class TranscribeButton {
                     NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.voiceTranscriptionUpdate, messageObject, null, null, (Boolean) true, (Boolean) true);
                 });
             } else {
+                if (GgramConfig.isVoiceToTextEnabled) {
+                    TranscribeButton.openVideoTranscription(messageObject);
+                    messageObject.messageOwner.voiceTranscriptionOpen = true;
+                    messageObject.messageOwner.voiceTranscriptionFinal = false;
+                    if (transcribeOperationsByDialogPosition == null) {
+                        transcribeOperationsByDialogPosition = new HashMap<>();
+                    }
+                    transcribeOperationsByDialogPosition.put((Integer) reqInfoHash(messageObject), messageObject);
+                    AndroidUtilities.runOnUIThread(() -> {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.voiceTranscriptionUpdate, messageObject, null, null, (Boolean) true, (Boolean) false);
+                    });
+
+                    Utilities.globalQueue.postRunnable(() -> {
+                        File f = FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner);
+                        if (f == null || !f.exists() || f.length() == 0) {
+                            if (messageObject.getDocument() != null) {
+                                FileLoader.getInstance(account).loadFile(messageObject.getDocument(), messageObject, FileLoader.PRIORITY_HIGH, 0);
+                            }
+                            for (int i = 0; i < 40; i++) {
+                                try {
+                                    Thread.sleep(250);
+                                } catch (Exception ignored) {}
+                                f = FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner);
+                                if (f != null && f.exists() && f.length() > 0) {
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (f != null && f.exists() && f.length() > 0) {
+                            GgramVoiceToText.transcribeVoiceMessage(ApplicationLoader.applicationContext, f, new GgramVoiceToText.TranscriptionCallback() {
+                                @Override
+                                public void onProgress(String partialText) {
+                                }
+
+                                @Override
+                                public void onSuccess(String fullText) {
+                                    messageObject.messageOwner.voiceTranscriptionOpen = true;
+                                    messageObject.messageOwner.voiceTranscriptionFinal = true;
+                                    MessagesStorage.getInstance(account).updateMessageVoiceTranscription(dialogId, messageId, fullText, messageObject.messageOwner);
+                                    AndroidUtilities.runOnUIThread(() -> {
+                                        finishTranscription(messageObject, 0, fullText);
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    String errText = "⚠️ " + errorMessage;
+                                    messageObject.messageOwner.voiceTranscriptionOpen = true;
+                                    messageObject.messageOwner.voiceTranscriptionFinal = true;
+                                    MessagesStorage.getInstance(account).updateMessageVoiceTranscription(dialogId, messageId, errText, messageObject.messageOwner);
+                                    AndroidUtilities.runOnUIThread(() -> {
+                                        finishTranscription(messageObject, 0, errText);
+                                    });
+                                }
+                            });
+                        } else {
+                            AndroidUtilities.runOnUIThread(() -> {
+                                String errText = "⚠️ Не удалось загрузить аудиофайл";
+                                messageObject.messageOwner.voiceTranscriptionOpen = true;
+                                messageObject.messageOwner.voiceTranscriptionFinal = true;
+                                MessagesStorage.getInstance(account).updateMessageVoiceTranscription(dialogId, messageId, errText, messageObject.messageOwner);
+                                finishTranscription(messageObject, 0, errText);
+                            });
+                        }
+                    });
+                    return;
+                }
+
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d("sending Transcription request, msg_id=" + messageId + " dialog_id=" + dialogId);
                 }

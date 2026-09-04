@@ -99,7 +99,7 @@ public class GgramSettingsActivity extends BaseFragment {
         items.add(Item.header("ГОЛОСОВЫЕ, ВИДЕО И МЕДИА"));
         items.add(Item.check("Подтверждение голосовых и кружочков", "Предпросмотр, прослушивание и подтверждение перед отправкой", "confirm_voice", GgramConfig.isConfirmVoiceNotes));
         items.add(Item.check("Сохранение кружочков как видео (.mp4)", "Скачивание видеокружков в системную галерею смартфона", "save_round_mp4", GgramConfig.isSaveRoundVideosAsMp4));
-        items.add(Item.check("Бесплатная расшифровка речи", "Распознавание голосовых заметок и кружочков без Premium", "voice_to_text", GgramConfig.isVoiceToTextEnabled));
+        items.add(Item.check("Бесплатная расшифровка речи", "Автономное офлайн-распознавание Vosk без интернета и Premium", "voice_to_text", GgramConfig.isVoiceToTextEnabled));
         items.add(Item.check("Бесшумный граббер медиа", "Сохранение самоуничтожающихся фото и видео в Vault", "antirecall_media", GgramConfig.isAntiRecallMedia));
         items.add(Item.info("Защита от случайной отправки оговорок и расширенные возможности медиа."));
 

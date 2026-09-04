@@ -114,3 +114,10 @@
 # Use -keep to explicitly keep any other classes shrinking would remove
 -dontoptimize
 -dontobfuscate
+
+# Vosk Offline Speech Recognition & JNA
+-keep class com.sun.jna.** { *; }
+-keepclassmembers class * extends com.sun.jna.** { public *; }
+-keep class org.vosk.** { *; }
+-dontwarn org.vosk.**
+-dontwarn com.sun.jna.**

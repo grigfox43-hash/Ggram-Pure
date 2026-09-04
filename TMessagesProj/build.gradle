@@ -83,7 +83,8 @@ dependencies {
     }
     api project(':jlatexmath')
 
-//    implementation 'com.google.mlkit:translate:17.0.3'
+    api 'com.alphacephei:vosk-android:0.3.75@aar'
+    api 'net.java.dev.jna:jna:5.18.1@aar'
 
     constraints {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {

@@ -1,27 +1,33 @@
 package org.ggram.ai;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
 import android.util.Log;
 
 import org.ggram.config.GgramConfig;
+import org.json.JSONObject;
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.Utilities;
+import org.vosk.Model;
+import org.vosk.Recognizer;
+import org.vosk.android.StorageService;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /**
- * GgramVoiceToText - Free Speech-to-Text transcription engine for voice messages
- * and video notes without requiring Telegram Premium.
+ * GgramVoiceToText - High-performance offline Speech-to-Text engine.
+ * Powered by Vosk embedded Russian acoustic language model.
+ * Decodes voice messages and video notes completely offline on-device without Telegram Premium.
  */
 public class GgramVoiceToText {
 
     private static final String TAG = "GgramVoiceToText";
+    private static final float SAMPLE_RATE = 16000.0f;
+
+    private static volatile Model sharedModel = null;
+    private static volatile boolean isInitializing = false;
+    private static final Object lock = new Object();
 
     public interface TranscriptionCallback {
         void onProgress(String partialText);
@@ -29,70 +35,154 @@ public class GgramVoiceToText {
         void onError(String errorMessage);
     }
 
-    public static void transcribeVoiceMessage(Context context, File audioFile, String language, TranscriptionCallback callback) {
-        if (!GgramConfig.isVoiceToTextEnabled) {
-            if (callback != null) callback.onError("Voice-to-Text is disabled in Ggram settings");
+    private interface ModelCallback {
+        void onReady(Model model);
+        void onError(Exception e);
+    }
+
+    public static void ensureModelReady(Context context, ModelCallback callback) {
+        if (sharedModel != null) {
+            if (callback != null) callback.onReady(sharedModel);
             return;
         }
 
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-        mainHandler.post(() -> {
-            if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-                fallbackTranscribe(audioFile, callback);
+        synchronized (lock) {
+            if (sharedModel != null) {
+                if (callback != null) callback.onReady(sharedModel);
                 return;
             }
 
-            try {
-                final SpeechRecognizer recognizer = SpeechRecognizer.createSpeechRecognizer(context);
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, language != null ? language : "ru-RU");
-                intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-
-                recognizer.setRecognitionListener(new RecognitionListener() {
-                    @Override public void onReadyForSpeech(Bundle params) {}
-                    @Override public void onBeginningOfSpeech() {}
-                    @Override public void onRmsChanged(float rmsdB) {}
-                    @Override public void onBufferReceived(byte[] buffer) {}
-                    @Override public void onEndOfSpeech() {}
-
-                    @Override
-                    public void onError(int error) {
-                        Log.w(TAG, "SpeechRecognizer error: " + error + ". Using fast fallback.");
-                        fallbackTranscribe(audioFile, callback);
-                        recognizer.destroy();
-                    }
-
-                    @Override
-                    public void onResults(Bundle results) {
-                        ArrayList<String> matches = results != null ? results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) : null;
-                        String text = (matches != null && !matches.isEmpty()) ? matches.get(0) : "[Аудиосообщение]";
-                        if (callback != null) callback.onSuccess(text);
-                        recognizer.destroy();
-                    }
-
-                    @Override
-                    public void onPartialResults(Bundle partialResults) {
-                        ArrayList<String> matches = partialResults != null ? partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) : null;
-                        if (matches != null && !matches.isEmpty() && callback != null) {
-                            callback.onProgress(matches.get(0));
+            if (isInitializing) {
+                Utilities.globalQueue.postRunnable(() -> {
+                    try {
+                        for (int i = 0; i < 50; i++) {
+                            Thread.sleep(100);
+                            if (sharedModel != null) {
+                                if (callback != null) callback.onReady(sharedModel);
+                                return;
+                            }
                         }
-                    }
-
-                    @Override public void onEvent(int eventType, Bundle params) {}
+                    } catch (InterruptedException ignored) {}
+                    if (callback != null) callback.onError(new Exception("Model initialization timed out"));
                 });
-
-                recognizer.startListening(intent);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to start speech recognizer", e);
-                fallbackTranscribe(audioFile, callback);
+                return;
             }
+
+            isInitializing = true;
+        }
+
+        StorageService.unpack(context, "model-ru", "model", model -> {
+            synchronized (lock) {
+                sharedModel = model;
+                isInitializing = false;
+            }
+            Log.i(TAG, "Vosk offline Russian model loaded successfully from assets");
+            if (callback != null) callback.onReady(model);
+        }, exception -> {
+            synchronized (lock) {
+                isInitializing = false;
+            }
+            Log.e(TAG, "Failed to unpack Vosk model from assets", exception);
+
+            File fallbackDir = new File(context.getFilesDir(), "model");
+            if (fallbackDir.exists() && fallbackDir.isDirectory()) {
+                try {
+                    Model localModel = new Model(fallbackDir.getAbsolutePath());
+                    synchronized (lock) {
+                        sharedModel = localModel;
+                    }
+                    if (callback != null) callback.onReady(localModel);
+                    return;
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to load model from fallback directory", e);
+                }
+            }
+
+            if (callback != null) callback.onError(exception);
         });
     }
 
-    private static void fallbackTranscribe(File audioFile, TranscriptionCallback callback) {
-        if (callback != null) {
-            callback.onSuccess("✨ [Расшифровка Ggram]: Содержимое голосового сообщения распознано.");
+    public static void transcribeVoiceMessage(Context context, File audioFile, TranscriptionCallback callback) {
+        if (!GgramConfig.isVoiceToTextEnabled) {
+            if (callback != null) callback.onError("Voice-to-Text отключен в настройках Ggram");
+            return;
         }
+
+        if (audioFile == null || !audioFile.exists() || audioFile.length() == 0) {
+            if (callback != null) callback.onError("Аудиофайл не найден в кэше");
+            return;
+        }
+
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                Log.d(TAG, "Starting offline audio decoding for: " + audioFile.getName());
+                byte[] pcmData = GgramAudioDecoder.decodeTo16kHzPcm(audioFile);
+                if (pcmData == null || pcmData.length == 0) {
+                    if (callback != null) callback.onError("Не удалось декодировать аудиопоток");
+                    return;
+                }
+
+                ensureModelReady(context, new ModelCallback() {
+                    @Override
+                    public void onReady(Model model) {
+                        Utilities.globalQueue.postRunnable(() -> {
+                            Recognizer recognizer = null;
+                            try {
+                                recognizer = new Recognizer(model, SAMPLE_RATE);
+                                int chunkSize = 4096;
+                                for (int i = 0; i < pcmData.length; i += chunkSize) {
+                                    int len = Math.min(chunkSize, pcmData.length - i);
+                                    byte[] chunk = new byte[len];
+                                    System.arraycopy(pcmData, i, chunk, 0, len);
+                                    recognizer.acceptWaveForm(chunk, len);
+                                }
+
+                                String finalJson = recognizer.getFinalResult();
+                                String text = "";
+                                if (finalJson != null && finalJson.contains("\"text\"")) {
+                                    JSONObject obj = new JSONObject(finalJson);
+                                    text = obj.optString("text", "").trim();
+                                }
+
+                                if (text.isEmpty()) {
+                                    text = "[Голос не распознан]";
+                                } else {
+                                    text = Character.toUpperCase(text.charAt(0)) + text.substring(1);
+                                }
+
+                                final String resultText = text;
+                                Log.i(TAG, "Offline transcription complete: " + resultText);
+                                if (callback != null) {
+                                    AndroidUtilities.runOnUIThread(() -> callback.onSuccess(resultText));
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Recognition failed", e);
+                                if (callback != null) {
+                                    AndroidUtilities.runOnUIThread(() -> callback.onError("Ошибка распознавания: " + e.getMessage()));
+                                }
+                            } finally {
+                                if (recognizer != null) {
+                                    recognizer.close();
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Model error: " + e.getMessage());
+                        if (callback != null) {
+                            AndroidUtilities.runOnUIThread(() -> callback.onError("Языковая модель не найдена в приложении"));
+                        }
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Decoding exception", e);
+                if (callback != null) {
+                    AndroidUtilities.runOnUIThread(() -> callback.onError("Ошибка обработки звука: " + e.getMessage()));
+                }
+            }
+        });
     }
 }
