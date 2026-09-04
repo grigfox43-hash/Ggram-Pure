@@ -17,6 +17,24 @@ public class GgramConfig {
     public static boolean isGhostDontSendTyping = true;
     public static boolean isGhostHideStoriesSeen = true;
 
+    public static boolean isGhostMasterEnabled() {
+        return isGhostDontSendRead && isGhostDontSendTyping && isGhostHideStoriesSeen;
+    }
+
+    public static void setGhostModeMaster(boolean enabled) {
+        isGhostDontSendRead = enabled;
+        isGhostDontSendTyping = enabled;
+        isGhostHideStoriesSeen = enabled;
+        SharedPreferences prefs = getPrefs();
+        if (prefs != null) {
+            prefs.edit()
+                    .putBoolean("ghost_no_read", enabled)
+                    .putBoolean("ghost_no_typing", enabled)
+                    .putBoolean("ghost_no_stories", enabled)
+                    .apply();
+        }
+    }
+
     // Forwarding & Text
     public static boolean isForwardNoAuthors = true;
     public static boolean isForwardNoCaptions = false;
@@ -42,6 +60,7 @@ public class GgramConfig {
     public static boolean isHideStories = false;
     public static boolean isAdBlockEnabled = true;
     public static boolean isShowMetadataDetails = true;
+    public static boolean isHideBottomBar = false;
 
     static {
         loadConfig();
@@ -83,6 +102,12 @@ public class GgramConfig {
         isHideStories = prefs.getBoolean("hide_stories", false);
         isAdBlockEnabled = prefs.getBoolean("adblock_enabled", true);
         isShowMetadataDetails = prefs.getBoolean("show_metadata", true);
+        isHideBottomBar = prefs.getBoolean("hide_bottom_bar", false);
+    }
+
+    public static void setHideBottomBar(boolean hide) {
+        isHideBottomBar = hide;
+        toggle("hide_bottom_bar", hide);
     }
 
     public static void toggle(String key, boolean val) {

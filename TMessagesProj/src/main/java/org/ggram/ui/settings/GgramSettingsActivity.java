@@ -80,6 +80,7 @@ public class GgramSettingsActivity extends BaseFragment {
 
         // 1. Ghost Mode
         items.add(Item.header("РЕЖИМ НЕВИДИМКИ (GHOST MODE)"));
+        items.add(Item.check("Общий режим невидимки", "Включить/выключить все функции скрытности разом", "ghost_master", GgramConfig.isGhostMasterEnabled()));
         items.add(Item.check("Не отправлять статус «Прочитано»", "Собеседник не видит 2 галочки при чтении вами сообщений", "ghost_no_read", GgramConfig.isGhostDontSendRead));
         items.add(Item.check("Скрывать статус набора текста", "Не отправлять «Печатает...», «Записывает голосовое/видео»", "ghost_no_typing", GgramConfig.isGhostDontSendTyping));
         items.add(Item.check("Скрытый просмотр историй (Stories)", "Не отображаться в списке зрителей чужих историй", "ghost_no_stories", GgramConfig.isGhostHideStoriesSeen));
@@ -111,6 +112,7 @@ public class GgramSettingsActivity extends BaseFragment {
 
         // 5. Chats & Ergonomics
         items.add(Item.header("ЧАТЫ И ЭРГОНОМИКА"));
+        items.add(Item.check("Скрыть нижнюю плавающую панель", "Убрать плавающую панель и вернуть классическое боковое меню", "hide_bottom_bar", GgramConfig.isHideBottomBar));
         items.add(Item.check("Безлимитные закрепы чатов", "Снять ограничение на количество закрепленных диалогов", "unlimited_pins", GgramConfig.isUnlimitedPins));
         items.add(Item.check("Подтверждение удаления диалога", "Защита от случайного удаления переписки одним свайпом", "confirm_delete", GgramConfig.isConfirmDialogDelete));
         items.add(Item.check("Скрыть блок историй (Stories)", "Убрать кружочки историй с главного экрана диалогов", "hide_stories", GgramConfig.isHideStories));
@@ -121,7 +123,7 @@ public class GgramSettingsActivity extends BaseFragment {
         // 6. Proxy
         items.add(Item.header("СЕТЬ И ПРОКСИ"));
         items.add(Item.action("Настройки прокси Ggram", "MTProto, Shadowsocks, Socks5, V2Ray с авто-пином"));
-        items.add(Item.info("Ggram Pure v1.2.0 • Obsidian Graphite Edition"));
+        items.add(Item.info("Ggram Pure v1.3.0 • Emerald Obsidian Edition"));
     }
 
     @Override
@@ -153,8 +155,17 @@ public class GgramSettingsActivity extends BaseFragment {
             if (position < 0 || position >= items.size()) return;
             Item item = items.get(position);
             if (item.type == 1) { // toggle check
-                boolean newVal = !item.checked;
-                GgramConfig.toggle(item.key, newVal);
+                if ("ghost_master".equals(item.key)) {
+                    boolean newVal = !item.checked;
+                    GgramConfig.setGhostModeMaster(newVal);
+                } else if ("hide_bottom_bar".equals(item.key)) {
+                    boolean newVal = !item.checked;
+                    GgramConfig.setHideBottomBar(newVal);
+                    NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.mainUserInfoChanged);
+                } else {
+                    boolean newVal = !item.checked;
+                    GgramConfig.toggle(item.key, newVal);
+                }
                 updateRows();
                 if (listAdapter != null) {
                     listAdapter.notifyDataSetChanged();

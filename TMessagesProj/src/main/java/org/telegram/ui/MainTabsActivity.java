@@ -47,6 +47,7 @@ import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import org.ggram.config.GgramConfig;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
@@ -271,6 +272,17 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     @Override
     public void onResume() {
         super.onResume();
+        if (GgramConfig.isHideBottomBar) {
+            if (tabsViewWrapper != null) {
+                tabsViewWrapper.setVisibility(View.GONE);
+            }
+            if (tabsView != null) {
+                tabsView.setVisibility(View.GONE);
+            }
+            if (fadeView != null) {
+                fadeView.setVisibility(View.GONE);
+            }
+        }
         blur3_updateColors();
         checkContactsTabBadge();
         checkUnreadCount(true);
@@ -932,7 +944,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         }
         {
             int bottomMargin = isUpdateLayoutVisible ? (navigationBarHeight + updateLayoutHeight) : 0;
-            if (tabletLayout) {
+            if (tabletLayout && !GgramConfig.isHideBottomBar) {
                 bottomMargin = Math.max(bottomMargin, navigationBarHeight + dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS));
             }
             lp = (ViewGroup.MarginLayoutParams) viewPager.getLayoutParams();
@@ -1062,6 +1074,11 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             return;
         }
 
+        if (GgramConfig.isHideBottomBar) {
+            fadeView.setVisibility(View.GONE);
+            return;
+        }
+
         final float animatedPosition = viewPager.getPositionAnimated();
         final float isProfile = 1f - MathUtils.clamp(Math.abs(POSITION_PROFILE - animatedPosition), 0, 1);
         final float hide = 1f - AndroidUtilities.getNavigationBarThirdButtonsFactor(0, 1f, navigationBarHeight);
@@ -1076,6 +1093,16 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     }
 
     private void checkUi_tabsPosition() {
+        if (GgramConfig.isHideBottomBar) {
+            if (tabsViewWrapper != null) {
+                tabsViewWrapper.setVisibility(View.GONE);
+            }
+            if (tabsView != null) {
+                tabsView.setVisibility(View.GONE);
+            }
+            return;
+        }
+
         final boolean isUpdateLayoutVisible = updateLayoutWrapper.isUpdateLayoutVisible();
         final int updateLayoutHeight = isUpdateLayoutVisible ? dp(UpdateLayoutWrapper.HEIGHT) : 0;
         final int normalY = -(updateLayoutHeight);

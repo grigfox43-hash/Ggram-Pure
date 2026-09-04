@@ -127,6 +127,8 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
+import org.ggram.config.GgramConfig;
+import org.ggram.ui.menu.GgramSideMenu;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.XiaomiUtilities;
 import org.telegram.messenger.browser.Browser;
@@ -2979,8 +2981,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         BirthdayController.getInstance(currentAccount).check();
-        additionNavigationBarHeight = hasMainTabs ? dp(MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
-        additionFloatingButtonOffset = hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
+        additionNavigationBarHeight = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
+        additionFloatingButtonOffset = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
 
         return true;
     }
@@ -3503,6 +3505,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         } else {
             if (searchString != null || folderId != 0 || communityId != 0) {
                 actionBar.setBackButtonDrawable(backDrawable = new BackDrawable(false));
+            } else if (GgramConfig.isHideBottomBar) {
+                actionBar.setBackButtonDrawable(new MenuDrawable());
             }
             if (folderId != 0) {
                 actionBar.setTitle(getString(R.string.ArchivedChats));
@@ -3899,6 +3903,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                     } else if (onlySelect || folderId != 0 || communityId != 0) {
                         finishFragment();
+                    } else if (GgramConfig.isHideBottomBar) {
+                        GgramSideMenu.show(DialogsActivity.this);
                     }
                 } else if (id == 1) {
                     if (getParentActivity() == null) {
@@ -7023,6 +7029,19 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        additionNavigationBarHeight = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
+        additionFloatingButtonOffset = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
+        if (!onlySelect && folderId == 0 && communityId == 0 && searchString == null && actionBar != null) {
+            if (GgramConfig.isHideBottomBar) {
+                if (!(actionBar.getBackButtonDrawable() instanceof MenuDrawable)) {
+                    actionBar.setBackButtonDrawable(new MenuDrawable());
+                }
+            } else {
+                if (actionBar.getBackButtonDrawable() instanceof MenuDrawable) {
+                    actionBar.setBackButtonDrawable(null);
+                }
+            }
+        }
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
         }
@@ -14202,7 +14221,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         iBlur3PositionActionBar.set(0, -additionalList, fragmentView.getMeasuredWidth(), lerp(actionBarHeight, actionBarHeightSearch, animatorSearchVisible.getFloatValue()) + additionalList );
 
         boolean hasBottomBlur = false;
-        if (hasMainTabs) {
+        if (hasMainTabs && !GgramConfig.isHideBottomBar) {
             iBlur3PositionMainTabs.set(0, mainTabTop, fragmentView.getMeasuredWidth(), mainTabBottom);
             iBlur3PositionMainTabs.inset(0, LiteMode.isEnabled(LiteMode.FLAG_LIQUID_GLASS) ? 0 : -dp(48));
 
