@@ -162,6 +162,7 @@ public class GgramSettingsActivity extends BaseFragment {
                 } else if ("hide_bottom_bar".equals(item.key)) {
                     boolean newVal = !item.checked;
                     GgramConfig.setHideBottomBar(newVal);
+                    NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.updateInterfaces, org.telegram.messenger.MessagesController.UPDATE_MASK_ALL);
                     NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.mainUserInfoChanged);
                 } else {
                     boolean newVal = !item.checked;

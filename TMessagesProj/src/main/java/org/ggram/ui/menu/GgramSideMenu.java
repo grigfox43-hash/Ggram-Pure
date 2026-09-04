@@ -42,6 +42,7 @@ import org.telegram.ui.ContactsActivity;
 import org.telegram.ui.GroupCreateActivity;
 import org.telegram.ui.ProfileActivity;
 import org.telegram.ui.SettingsActivity;
+import org.ggram.ui.settings.GgramSettingsActivity;
 
 /**
  * GgramSideMenu - Classic Telegram slide-in drawer side menu for Ggram Pure.
@@ -160,7 +161,7 @@ public class GgramSideMenu {
         scrollView.setVerticalScrollBarEnabled(false);
         final LinearLayout itemsList = new LinearLayout(context);
         itemsList.setOrientation(LinearLayout.VERTICAL);
-        itemsList.setPadding(0, AndroidUtilities.dp(8), 0, AndroidUtilities.dp(8));
+        itemsList.setPadding(0, AndroidUtilities.dp(8), 0, AndroidUtilities.dp(40));
 
         // Item: My Profile
         addItem(context, itemsList, R.drawable.msg_contact, "Мой профиль", () -> {
@@ -208,10 +209,22 @@ public class GgramSideMenu {
             });
         });
 
-        // Item: Settings (General Settings)
-        addItem(context, itemsList, R.drawable.msg_settings, LocaleController.getString("Settings", R.string.Settings), () -> {
+        // Item: General Settings
+        addItem(context, itemsList, R.drawable.msg_settings, "Общие настройки", () -> {
             dismissMenu(dialog, scrim, drawer, drawerWidth, () -> {
                 fragment.presentFragment(new SettingsActivity());
+            });
+        });
+
+        // Separator
+        View divider = new View(context);
+        divider.setBackgroundColor(0xFF2C2F36);
+        itemsList.addView(divider, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 1, 16, 6, 16, 6));
+
+        // Item: Ggram Settings
+        addItem(context, itemsList, R.drawable.msg_secret, "Настройки Ggram Pure", () -> {
+            dismissMenu(dialog, scrim, drawer, drawerWidth, () -> {
+                fragment.presentFragment(new GgramSettingsActivity());
             });
         });
 

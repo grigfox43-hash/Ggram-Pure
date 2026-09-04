@@ -9014,7 +9014,8 @@ public class Theme {
             key == key_chat_attachCheckBoxCheck || key == key_featuredStickers_buttonText ||
             key == key_picker_badgeText || key == key_windowBackgroundCheckText ||
             key == key_chats_verifiedCheck || key == key_profile_verifiedCheck ||
-            key == key_chats_archiveIcon || key == key_chats_archiveText) {
+            key == key_chats_archiveIcon || key == key_chats_archiveText ||
+            key == key_chat_msgIvButtonPrimaryInText || key == key_chat_msgIvButtonPrimaryOutText) {
             return 0xFF18191D;
         }
 
@@ -9038,7 +9039,7 @@ public class Theme {
             key == key_gift_ribbon || key == key_dialogInputFieldActivated || key == key_windowBackgroundWhiteInputFieldActivated ||
             key == key_windowBackgroundWhiteBlueHeader || key == key_windowBackgroundWhiteValueText ||
             key == key_chats_menuItemIcon || key == key_chats_pinnedIcon ||
-            key == key_chats_mentionIcon || key == key_chat_attachIcon || key == key_chat_messagePanelIcons ||
+            key == key_chats_mentionIcon || key == key_chats_onlineCircle || key == key_chat_attachIcon || key == key_chat_messagePanelIcons ||
             key == key_chat_replyPanelIcons || key == key_chat_searchPanelIcons || key == key_chat_emojiBottomPanelIcon ||
             key == key_chat_emojiPanelIconSelected || key == key_chat_emojiPanelStickerPackSelectorLine ||
             key == key_chat_emojiPanelStickerSetNameHighlight || key == key_chat_emojiPanelNewTrending ||
@@ -9051,12 +9052,17 @@ public class Theme {
             key == key_picker_badge || key == key_picker_enabledButton || key == key_chat_attachActiveTab ||
             key == key_chat_attachGalleryBackground || key == key_chat_editMediaButton || key == key_chat_topPanelLine ||
             key == key_profile_creatorIcon || key == key_profile_tabSelectedLine ||
-            key == key_stories_circle1 || key == key_stories_circle_dialog1 ||
+            key == key_stories_circle1 || key == key_stories_circle_dialog1 || key == key_stories_circle_close1 ||
             key == key_glass_tabSelected || key == key_glass_tabSelectedText || key == key_telegram_color_dialogsLogo ||
             key == key_avatar_backgroundSaved || key == key_avatar_backgroundCyan || key == key_avatar_backgroundBlue ||
             key == key_voipgroup_overlayBlue1 || key == key_voipgroup_topPanelBlue1 || key == key_voipgroup_connectingProgress ||
             key == key_voipgroup_unmuteButton || key == key_premiumGradient1 || key == key_premiumGradientBottomSheet1 ||
-            key == key_actionBarDefaultIcon || key == key_actionBarActionModeDefaultIcon || key == key_actionBarDefaultSubmenuItemIcon) {
+            key == key_actionBarDefaultIcon || key == key_actionBarActionModeDefaultIcon || key == key_actionBarDefaultSubmenuItemIcon ||
+            key == key_chats_sentCheck || key == key_chats_sentReadCheck ||
+            key == key_chat_inLoader || key == key_chat_inLoaderSelected || key == key_chat_mediaLoader ||
+            key == key_chat_inMediaIcon || key == key_chat_msgIvButtonPrimaryIn || key == key_chat_msgIvButtonPrimaryOut ||
+            key == key_chat_botButtonText || key == key_chat_botProgress ||
+            key == key_chat_replyPanelLine || key == key_chat_inReplyLine || key == key_chat_inPreviewLine) {
             return 0xFF01BA53;
         }
 
@@ -9108,15 +9114,25 @@ public class Theme {
         }
         // High Contrast in Outgoing Bubble: Bright Mint #5EFFA8
         if (key == key_chat_messageLinkOut || key == key_chat_outSentCheck || key == key_chat_outSentCheckSelected ||
+            key == key_chat_outSentCheckRead || key == key_chat_outSentCheckReadSelected || key == key_chat_mediaSentCheck ||
             key == key_chat_outForwardedNameText || key == key_chat_outReplyNameText || key == key_chat_outReplyLine ||
             key == key_chat_outPreviewInstantText || key == key_chat_outTextSelectionCursor ||
-            key == key_chat_outAudioProgress || key == key_chat_outVoiceSeekbarFill || key == key_chat_outVoiceSeekbarSelected) {
+            key == key_chat_outAudioProgress || key == key_chat_outVoiceSeekbarFill || key == key_chat_outVoiceSeekbarSelected ||
+            key == key_chat_outAudioSeekbarSelected || key == key_chat_outAudioSeekbarFill ||
+            key == key_chat_outLoader || key == key_chat_outLoaderSelected ||
+            key == key_chat_outMediaIcon || key == key_chat_outMediaIconSelected) {
             return 0xFF5EFFA8;
         }
-        if (key == key_chat_outTimeText) {
+        if (key == key_chat_outTimeText || key == key_chats_sentClock || key == key_chat_outSentClock || key == key_chat_outSentClockSelected) {
             return 0xFF85CBA0;
         }
-        if (key == key_chat_outVoiceSeekbar) {
+        if (key == key_chat_mediaSentClock) {
+            return 0xFFFFFFFF;
+        }
+        if (key == key_chat_inSentClock || key == key_chat_inSentClockSelected) {
+            return 0xFF9EACB2;
+        }
+        if (key == key_chat_outVoiceSeekbar || key == key_chat_outAudioSeekbar || key == key_chat_outAudioCacheSeekbar) {
             return 0xFF245736;
         }
 
@@ -9131,9 +9147,10 @@ public class Theme {
             key == key_windowBackgroundWhiteBlueText4 || key == key_windowBackgroundWhiteBlueText5 ||
             key == key_windowBackgroundWhiteBlueText6 || key == key_windowBackgroundWhiteBlueText7 ||
             key == key_dialogTextLink || key == key_dialogTextBlue || key == key_dialogTextBlue2 ||
-            key == key_dialogTextBlue4 || key == key_stories_circle2 || key == key_stories_circle_dialog2 ||
+            key == key_dialogTextBlue4 || key == key_stories_circle2 || key == key_stories_circle_dialog2 || key == key_stories_circle_close2 ||
             key == key_profile_tabSelectedText || key == key_undo_cancelColor || key == key_voipgroup_overlayBlue2 ||
-            key == key_voipgroup_topPanelBlue2 || key == key_voipgroup_listeningText || key == key_location_sendLocationText) {
+            key == key_voipgroup_topPanelBlue2 || key == key_voipgroup_listeningText || key == key_location_sendLocationText ||
+            key == key_chat_replyPanelName || key == key_chat_addContact) {
             return 0xFF10D067;
         }
 
@@ -9146,7 +9163,8 @@ public class Theme {
 
         // 9. Secondary & Date Texts
         if (key == key_chat_inTimeText || key == key_chats_message || key == key_windowBackgroundWhiteGrayText ||
-            key == key_dialogTextGray || key == key_dialogSearchHint || key == key_chat_recordVoiceCancel) {
+            key == key_dialogTextGray || key == key_dialogSearchHint || key == key_chat_recordVoiceCancel ||
+            key == key_chat_replyPanelMessage) {
             return 0xFF9EACB2;
         }
         if (key == key_chats_date || key == key_windowBackgroundWhiteGrayText2) {

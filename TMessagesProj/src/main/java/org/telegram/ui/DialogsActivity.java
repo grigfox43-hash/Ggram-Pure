@@ -797,6 +797,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         private int startedTrackingPointerId;
         private int startedTrackingX;
         private int startedTrackingY;
+        private boolean edgeSwipeTracking;
+        private float edgeSwipeStartX;
+        private float edgeSwipeStartY;
         private VelocityTracker velocityTracker;
         private boolean globalIgnoreLayout;
         private int[] pos = new int[2];
@@ -1333,6 +1336,26 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
                 if (actionBar.isActionModeShowed()) {
                     allowMoving = true;
+                }
+                edgeSwipeTracking = false;
+            }
+            if (GgramConfig.isHideBottomBar && !onlySelect && folderId == 0 && communityId == 0 && !searching && (actionBar == null || !actionBar.isActionModeShowed())) {
+                if (action == MotionEvent.ACTION_DOWN) {
+                    if (ev.getX() < AndroidUtilities.dp(28)) {
+                        edgeSwipeTracking = true;
+                        edgeSwipeStartX = ev.getX();
+                        edgeSwipeStartY = ev.getY();
+                    } else {
+                        edgeSwipeTracking = false;
+                    }
+                } else if (action == MotionEvent.ACTION_MOVE && edgeSwipeTracking) {
+                    float dx = ev.getX() - edgeSwipeStartX;
+                    float dy = Math.abs(ev.getY() - edgeSwipeStartY);
+                    if (dx > AndroidUtilities.dp(30) && dx > dy * 1.5f) {
+                        edgeSwipeTracking = false;
+                        GgramSideMenu.show(DialogsActivity.this);
+                        return true;
+                    }
                 }
             }
             return checkTabsAnimationInProgress() || filterTabsView != null && filterTabsView.isAnimatingIndicator() || onTouchEvent(ev);
@@ -7026,22 +7049,30 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void updateGgramBottomBarState() {
         additionNavigationBarHeight = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
         additionFloatingButtonOffset = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
         if (!onlySelect && folderId == 0 && communityId == 0 && searchString == null && actionBar != null) {
             if (GgramConfig.isHideBottomBar) {
                 if (!(actionBar.getBackButtonDrawable() instanceof MenuDrawable)) {
-                    actionBar.setBackButtonDrawable(new MenuDrawable());
+                    MenuDrawable menuDrawable = new MenuDrawable();
+                    menuDrawable.setBackColor(getThemedColor(Theme.key_actionBarDefault));
+                    menuDrawable.setIconColor(getThemedColor(Theme.key_actionBarDefaultIcon));
+                    actionBar.setBackButtonDrawable(menuDrawable);
                 }
             } else {
                 if (actionBar.getBackButtonDrawable() instanceof MenuDrawable) {
                     actionBar.setBackButtonDrawable(null);
                 }
             }
+            actionBar.requestLayout();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateGgramBottomBarState();
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
         }
@@ -10608,6 +10639,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         } else if (id == NotificationCenter.proxySettingsChanged) {
             updateProxyButton(false, false);
         } else if (id == NotificationCenter.updateInterfaces) {
+            updateGgramBottomBarState();
             Integer mask = (Integer) args[0];
             updateVisibleRows(mask);
             if (filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE && (mask & MessagesController.UPDATE_MASK_READ_DIALOG_MESSAGE) != 0) {
@@ -13789,14 +13821,12 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
             }
         }
-        io.add(R.drawable.msg_settings_old, "Настройки Ggram", () -> {
+        io.add(R.drawable.msg_settings_old, "Общие настройки", () -> {
+            presentFragment(new SettingsActivity());
+        });
+        io.add(R.drawable.msg_secret, "Настройки Ggram Pure", () -> {
             presentFragment(new org.ggram.ui.settings.GgramSettingsActivity());
         });
-        if (getUserConfig().showCallsTab) {
-            io.add(R.drawable.msg_settings_old, getString(R.string.Settings), () -> {
-                presentFragment(new SettingsActivity());
-            });
-        }
 
         if (proxyMenuSubItem != null) {
             proxyMenuSubItem.subtextView.setTextColor(getThemedColor(Theme.key_groupcreate_sectionText));

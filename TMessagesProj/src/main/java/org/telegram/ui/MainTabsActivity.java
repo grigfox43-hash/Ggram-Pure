@@ -272,16 +272,17 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     @Override
     public void onResume() {
         super.onResume();
-        if (GgramConfig.isHideBottomBar) {
-            if (tabsViewWrapper != null) {
-                tabsViewWrapper.setVisibility(View.GONE);
-            }
-            if (tabsView != null) {
-                tabsView.setVisibility(View.GONE);
-            }
-            if (fadeView != null) {
-                fadeView.setVisibility(View.GONE);
-            }
+        if (tabsViewWrapper != null) {
+            tabsViewWrapper.setVisibility(GgramConfig.isHideBottomBar ? View.GONE : View.VISIBLE);
+        }
+        if (tabsView != null) {
+            tabsView.setVisibility(GgramConfig.isHideBottomBar ? View.GONE : View.VISIBLE);
+        }
+        if (fadeView != null) {
+            fadeView.setVisibility(GgramConfig.isHideBottomBar ? View.GONE : View.VISIBLE);
+        }
+        if (dialogsActivity != null) {
+            dialogsActivity.updateGgramBottomBarState();
         }
         blur3_updateColors();
         checkContactsTabBadge();
@@ -970,6 +971,18 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
         if (id == NotificationCenter.notificationsCountUpdated || id == NotificationCenter.updateInterfaces) {
+            if (tabsViewWrapper != null) {
+                tabsViewWrapper.setVisibility(GgramConfig.isHideBottomBar ? View.GONE : View.VISIBLE);
+            }
+            if (tabsView != null) {
+                tabsView.setVisibility(GgramConfig.isHideBottomBar ? View.GONE : View.VISIBLE);
+            }
+            if (fadeView != null) {
+                fadeView.setVisibility(GgramConfig.isHideBottomBar ? View.GONE : View.VISIBLE);
+            }
+            if (dialogsActivity != null) {
+                dialogsActivity.updateGgramBottomBarState();
+            }
             checkUnreadCount(fragmentView != null && fragmentView.isAttachedToWindow());
         } else if (id == NotificationCenter.appUpdateLoading) {
             if (updateLayout != null) {
