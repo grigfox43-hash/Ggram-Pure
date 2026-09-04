@@ -31,7 +31,6 @@ android {
     defaultConfig.applicationId = APP_PACKAGE
 
     sourceSets.main.jniLibs.srcDirs = ['../TMessagesProj/src/main/jniLibs/']
-    sourceSets.main.assets.srcDirs = ['src/main/assets', '../TMessagesProj/src/main/assets']
 
     lintOptions {
         disable 'MissingTranslation'
