@@ -13,7 +13,7 @@ public class GgramConfig {
     private static SharedPreferences preferences;
 
     // Ghost Mode
-    public static boolean isGhostDontSendRead = true;
+    public static boolean isGhostDontSendRead = false;
     public static boolean isGhostDontSendTyping = true;
     public static boolean isGhostHideStoriesSeen = true;
 
@@ -84,7 +84,7 @@ public class GgramConfig {
         SharedPreferences prefs = getPrefs();
         if (prefs == null) return;
 
-        isGhostDontSendRead = prefs.getBoolean("ghost_no_read", true);
+        isGhostDontSendRead = prefs.getBoolean("ghost_no_read", false);
         isGhostDontSendTyping = prefs.getBoolean("ghost_no_typing", true);
         isGhostHideStoriesSeen = prefs.getBoolean("ghost_no_stories", true);
 

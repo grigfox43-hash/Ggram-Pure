@@ -82,7 +82,7 @@ public class GgramSettingsActivity extends BaseFragment {
         // 1. Ghost Mode
         items.add(Item.header("РЕЖИМ НЕВИДИМКИ (GHOST MODE)"));
         items.add(Item.check("Общий режим невидимки", "Включить/выключить все функции скрытности разом", "ghost_master", GgramConfig.isGhostMasterEnabled()));
-        items.add(Item.check("Не отправлять статус «Прочитано»", "Собеседник не видит 2 галочки при чтении вами сообщений", "ghost_no_read", GgramConfig.isGhostDontSendRead));
+        items.add(Item.check("Не отправлять статус «Прочитано»", "Собеседник не видит 2 галочки (сообщения не помечаются прочитанными на ПК)", "ghost_no_read", GgramConfig.isGhostDontSendRead));
         items.add(Item.check("Скрывать статус набора текста", "Не отправлять «Печатает...», «Записывает голосовое/видео»", "ghost_no_typing", GgramConfig.isGhostDontSendTyping));
         items.add(Item.check("Скрытый просмотр историй (Stories)", "Не отображаться в списке зрителей чужих историй", "ghost_no_stories", GgramConfig.isGhostHideStoriesSeen));
         items.add(Item.info("Позволяет незаметно просматривать сообщения, каналы и истории."));
