@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-04T19:40:00Z",
+  "description": "Ggram Pure Anti-Censorship Dynamic Proxy Pool",
+  "proxies": [
+    {
+      "name": "Ggram Cloud 1 (UK Fake-TLS)",
+      "server": "silnet.varfootball.co.uk",
+      "port": 2053,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Cloud 2 (UK Fake-TLS)",
+      "server": "noron.talebi.co.uk",
+      "port": 2096,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Cloud 3 (UK Fake-TLS)",
+      "server": "new2.lambforkebeb.co.uk",
+      "port": 2096,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Cloud 4 (UK Fake-TLS)",
+      "server": "noone.lavazemi1.co.uk",
+      "port": 2083,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Cloud 5 (UK Fake-TLS)",
+      "server": "silver.ciaude.co.uk",
+      "port": 2096,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Cloud 6 (UK Fake-TLS)",
+      "server": "gallery.talebi.co.uk",
+      "port": 2096,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Fast 7",
+      "server": "nontanori.noshabekoka.info",
+      "port": 7799,
+      "secret": "dd10400103324995b07c030386e886e7f1",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Fast 8",
+      "server": "teranhavaei.charkhofalak.info",
+      "port": 7799,
+      "secret": "dd10400103324995b07c030386e886e7f1",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Fast 9",
+      "server": "vahshianeh.ghodratitarin.info",
+      "port": 7799,
+      "secret": "dd10400103324995b07c030386e886e7f1",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "Ggram Fast 10",
+      "server": "resturant.zereshkpolo.info",
+      "port": 7799,
+      "secret": "dd10400103324995b07c030386e886e7f1",
+      "type": "MTPROTO"
+    }
+  ]
+}

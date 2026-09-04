@@ -1,15 +1,25 @@
 package org.ggram.network;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.ggram.config.GgramConfig;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.tgnet.ConnectionsManager;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,12 +28,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * GgramProxyManager - Multi-protocol proxy manager (MTProto, Shadowsocks, Socks5, V2Ray)
- * with parallel ping latency benchmarking and automatic fastest node activation.
+ * GgramProxyManager - Multi-protocol proxy manager with remote dynamic GitLab sync,
+ * latency benchmarking, and automatic fastest node activation.
  */
 public class GgramProxyManager {
 
     private static final String TAG = "GgramProxyManager";
+
+    public static final String GITLAB_SNIPPET_URL = "https://gitlab.com/-/snippets/6051835/raw";
+    public static final String GITLAB_REPO_URL = "https://gitlab.com/grigfox43/main/-/raw/main/proxies.json";
 
     public enum ProxyType {
         MTPROTO,
@@ -34,6 +47,7 @@ public class GgramProxyManager {
 
     public static class ProxyServer {
         public String id;
+        public String name;
         public ProxyType type;
         public String host;
         public int port;
@@ -43,16 +57,18 @@ public class GgramProxyManager {
         public long pingMs = -1;
         public boolean isOnline = false;
 
-        public ProxyServer(String id, ProxyType type, String host, int port, String secret) {
+        public ProxyServer(String id, String name, ProxyType type, String host, int port, String secret) {
             this.id = id;
+            this.name = name;
             this.type = type;
             this.host = host;
             this.port = port;
             this.secret = secret;
         }
 
-        public ProxyServer(String id, ProxyType type, String host, int port, String username, String password) {
+        public ProxyServer(String id, String name, ProxyType type, String host, int port, String username, String password) {
             this.id = id;
+            this.name = name;
             this.type = type;
             this.host = host;
             this.port = port;
@@ -63,17 +79,130 @@ public class GgramProxyManager {
 
     private static final List<ProxyServer> proxyList = Collections.synchronizedList(new ArrayList<>());
     private static final ExecutorService executor = Executors.newFixedThreadPool(8);
+    private static volatile boolean isInitialized = false;
 
     public static void init(Context context) {
+        if (isInitialized) return;
+        isInitialized = true;
+
         setupDefaultProxies();
         Log.i(TAG, "GgramProxyManager initialized with " + proxyList.size() + " default anti-censorship nodes");
+
+        // Sync from GitLab dynamically in background
+        fetchRemoteProxies();
     }
 
     private static void setupDefaultProxies() {
         if (!proxyList.isEmpty()) return;
-        proxyList.add(new ProxyServer("1", ProxyType.MTPROTO, "149.154.167.50", 443, "ee11111111111111111111111111111111"));
-        proxyList.add(new ProxyServer("2", ProxyType.MTPROTO, "149.154.175.100", 443, "ee11111111111111111111111111111111"));
-        proxyList.add(new ProxyServer("3", ProxyType.SOCKS5, "127.0.0.1", 1080, null, null));
+
+        // Verified Fake-TLS and low latency MTProto nodes
+        addDefaultNode("1", "Ggram UK Cloud 1", ProxyType.MTPROTO, "silnet.varfootball.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("2", "Ggram UK Cloud 2", ProxyType.MTPROTO, "noron.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("3", "Ggram UK Cloud 3", ProxyType.MTPROTO, "new2.lambforkebeb.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("4", "Ggram UK Cloud 4", ProxyType.MTPROTO, "noone.lavazemi1.co.uk", 2083, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("5", "Ggram UK Cloud 5", ProxyType.MTPROTO, "silver.ciaude.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("6", "Ggram UK Cloud 6", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("7", "Ggram Fast 7", ProxyType.MTPROTO, "nontanori.noshabekoka.info", 7799, "dd10400103324995b07c030386e886e7f1");
+        addDefaultNode("8", "Ggram Fast 8", ProxyType.MTPROTO, "teranhavaei.charkhofalak.info", 7799, "dd10400103324995b07c030386e886e7f1");
+        addDefaultNode("9", "Ggram Fast 9", ProxyType.MTPROTO, "vahshianeh.ghodratitarin.info", 7799, "dd10400103324995b07c030386e886e7f1");
+        addDefaultNode("10", "Ggram Fast 10", ProxyType.MTPROTO, "resturant.zereshkpolo.info", 7799, "dd10400103324995b07c030386e886e7f1");
+    }
+
+    private static void addDefaultNode(String id, String name, ProxyType type, String host, int port, String secret) {
+        ProxyServer server = new ProxyServer(id, name, type, host, port, secret);
+        proxyList.add(server);
+        try {
+            SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(host, port, "", "", secret != null ? secret : "");
+            SharedConfig.addProxy(info);
+        } catch (Throwable ignore) {}
+    }
+
+    public static void fetchRemoteProxies() {
+        executor.execute(() -> {
+            String jsonContent = downloadUrl(GITLAB_SNIPPET_URL);
+            if (TextUtils.isEmpty(jsonContent)) {
+                jsonContent = downloadUrl(GITLAB_REPO_URL);
+            }
+            if (TextUtils.isEmpty(jsonContent)) {
+                Log.w(TAG, "Remote proxy list unreachable, using built-in defaults");
+                if (GgramConfig.isAutoProxyEnabled && SharedConfig.currentProxy == null) {
+                    autoSelectFastestProxy();
+                }
+                return;
+            }
+
+            try {
+                JSONObject root = new JSONObject(jsonContent);
+                JSONArray array = root.optJSONArray("proxies");
+                if (array != null && array.length() > 0) {
+                    int addedCount = 0;
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String server = obj.optString("server", "").trim();
+                        int port = obj.optInt("port", 443);
+                        String secret = obj.optString("secret", "").trim();
+                        String name = obj.optString("name", "Ggram Node " + (i + 1));
+
+                        if (!TextUtils.isEmpty(server) && port > 0) {
+                            boolean exists = false;
+                            for (ProxyServer p : proxyList) {
+                                if (p.host.equalsIgnoreCase(server) && p.port == port) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                            if (!exists) {
+                                ProxyServer ps = new ProxyServer("remote_" + i, name, ProxyType.MTPROTO, server, port, secret);
+                                proxyList.add(ps);
+                                SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(server, port, "", "", secret);
+                                SharedConfig.addProxy(info);
+                                addedCount++;
+                            }
+                        }
+                    }
+                    Log.i(TAG, "Successfully synced " + addedCount + " new proxies from GitLab");
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+
+            if (GgramConfig.isAutoProxyEnabled && SharedConfig.currentProxy == null) {
+                autoSelectFastestProxy();
+            }
+        });
+    }
+
+    private static String downloadUrl(String targetUrl) {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(targetUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(6000);
+            conn.setReadTimeout(6000);
+            conn.setRequestProperty("User-Agent", "Ggram-Client");
+            conn.setRequestProperty("Accept", "application/json, text/plain");
+            conn.connect();
+
+            if (conn.getResponseCode() == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+                reader.close();
+                return sb.toString();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to download from " + targetUrl + ": " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.disconnect();
+                } catch (Throwable ignored) {}
+            }
+        }
+        return null;
     }
 
     public static void pingAllProxies(PingCallback callback) {
@@ -133,6 +262,21 @@ public class GgramProxyManager {
             );
             SharedConfig.addProxy(info);
             SharedConfig.currentProxy = info;
+
+            Context context = ApplicationLoader.applicationContext;
+            if (context != null) {
+                SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+                preferences.edit()
+                        .putString("proxy_ip", info.address)
+                        .putString("proxy_pass", info.password)
+                        .putString("proxy_user", info.username)
+                        .putString("proxy_secret", info.secret)
+                        .putInt("proxy_port", info.port)
+                        .putBoolean("proxy_enabled", true)
+                        .putBoolean("proxy_enabled_calls", false)
+                        .apply();
+            }
+
             ConnectionsManager.setProxySettings(true, info.address, info.port, info.username, info.password, info.secret);
         } catch (Exception e) {
             FileLog.e(e);

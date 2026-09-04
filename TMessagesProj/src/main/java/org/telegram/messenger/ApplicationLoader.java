@@ -272,6 +272,11 @@ public class ApplicationLoader extends Application {
             DownloadController.getInstance(a);
         }
         BillingController.getInstance().startConnection();
+        try {
+            org.ggram.network.GgramProxyManager.init(applicationContext);
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
     }
 
     public ApplicationLoader() {
