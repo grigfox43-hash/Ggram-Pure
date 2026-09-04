@@ -141,6 +141,7 @@ public class FragmentFloatingButton extends FrameLayout implements FactorAnimato
 
     public void setImageResource(@DrawableRes int drawable) {
         imageView.setImageResource(drawable);
+        updateColors();
     }
 
     private BlurredBackgroundSourceColor iBlur3SourceColor;

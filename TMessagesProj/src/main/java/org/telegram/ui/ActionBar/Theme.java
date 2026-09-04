@@ -9015,7 +9015,12 @@ public class Theme {
             key == key_picker_badgeText || key == key_windowBackgroundCheckText ||
             key == key_chats_verifiedCheck || key == key_profile_verifiedCheck ||
             key == key_chats_archiveIcon || key == key_chats_archiveText ||
-            key == key_chat_msgIvButtonPrimaryInText || key == key_chat_msgIvButtonPrimaryOutText) {
+            key == key_chat_msgIvButtonPrimaryInText || key == key_chat_msgIvButtonPrimaryOutText ||
+            key == key_chat_mediaLoaderPhotoIcon || key == key_chat_mediaLoaderPhotoIconSelected ||
+            key == key_chat_inMediaIcon || key == key_chat_inMediaIconSelected ||
+            key == key_chat_inContactIcon || key == key_chat_outContactIcon ||
+            key == key_location_sendLocationIcon || key == key_chat_recordedVoicePlayPause ||
+            key == key_fastScrollText) {
             return 0xFF18191D;
         }
 
@@ -9045,7 +9050,7 @@ public class Theme {
             key == key_chat_emojiPanelStickerSetNameHighlight || key == key_chat_emojiPanelNewTrending ||
             key == key_dialogIcon || key == key_dialogSearchIcon ||
             key == key_files_folderIcon || key == key_windowBackgroundWhiteGrayIcon || key == key_windowBackgroundWhiteBlueIcon ||
-            key == key_location_sendLocationIcon || key == key_location_sendLiveLocationIcon || key == key_location_actionIcon ||
+            key == key_location_sendLiveLocationIcon || key == key_location_actionIcon ||
             key == key_location_actionActiveIcon || key == key_location_sendLocationBackground || key == key_location_liveLocationProgress ||
             key == key_dialog_liveLocationProgress || key == key_sharedMedia_startStopLoadIcon || key == key_chat_goDownButton ||
             key == key_chat_messagePanelCursor || key == key_chat_TextSelectionCursor || key == key_groupcreate_cursor ||
@@ -9060,7 +9065,8 @@ public class Theme {
             key == key_actionBarDefaultIcon || key == key_actionBarActionModeDefaultIcon || key == key_actionBarDefaultSubmenuItemIcon ||
             key == key_chats_sentCheck || key == key_chats_sentReadCheck ||
             key == key_chat_inLoader || key == key_chat_inLoaderSelected || key == key_chat_mediaLoaderPhoto || key == key_chat_mediaLoaderPhotoSelected ||
-            key == key_chat_inMediaIcon || key == key_chat_msgIvButtonPrimaryIn || key == key_chat_msgIvButtonPrimaryOut ||
+            key == key_chat_attachCheckBoxBackground || key == key_chat_inContactBackground || key == key_chat_outContactBackground ||
+            key == key_chat_msgIvButtonPrimaryIn || key == key_chat_msgIvButtonPrimaryOut ||
             key == key_chat_botButtonText ||
             key == key_chat_replyPanelLine || key == key_chat_inReplyLine || key == key_chat_inPreviewLine) {
             return 0xFF01BA53;
@@ -9150,7 +9156,7 @@ public class Theme {
             key == key_dialogTextBlue4 || key == key_stories_circle2 || key == key_stories_circle_dialog2 || key == key_stories_circle_closeFriends2 ||
             key == key_profile_tabSelectedText || key == key_undo_cancelColor || key == key_voipgroup_overlayBlue2 ||
             key == key_voipgroup_topPanelBlue2 || key == key_voipgroup_listeningText || key == key_location_sendLocationText ||
-            key == key_chat_replyPanelName || key == key_chat_addContact) {
+            key == key_chat_replyPanelName || key == key_chat_addContact || key == key_chat_topPanelTitle) {
             return 0xFF10D067;
         }
 

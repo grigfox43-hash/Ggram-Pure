@@ -128,7 +128,6 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.ggram.config.GgramConfig;
-import org.ggram.ui.menu.GgramSideMenu;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.XiaomiUtilities;
 import org.telegram.messenger.browser.Browser;
@@ -1338,25 +1337,6 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     allowMoving = true;
                 }
                 edgeSwipeTracking = false;
-            }
-            if (GgramConfig.isHideBottomBar && !onlySelect && folderId == 0 && communityId == 0 && !searching && (actionBar == null || !actionBar.isActionModeShowed())) {
-                if (action == MotionEvent.ACTION_DOWN) {
-                    if (ev.getX() < AndroidUtilities.dp(28)) {
-                        edgeSwipeTracking = true;
-                        edgeSwipeStartX = ev.getX();
-                        edgeSwipeStartY = ev.getY();
-                    } else {
-                        edgeSwipeTracking = false;
-                    }
-                } else if (action == MotionEvent.ACTION_MOVE && edgeSwipeTracking) {
-                    float dx = ev.getX() - edgeSwipeStartX;
-                    float dy = Math.abs(ev.getY() - edgeSwipeStartY);
-                    if (dx > AndroidUtilities.dp(30) && dx > dy * 1.5f) {
-                        edgeSwipeTracking = false;
-                        GgramSideMenu.show(DialogsActivity.this);
-                        return true;
-                    }
-                }
             }
             return checkTabsAnimationInProgress() || filterTabsView != null && filterTabsView.isAnimatingIndicator() || onTouchEvent(ev);
         }
@@ -3926,8 +3906,6 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                     } else if (onlySelect || folderId != 0 || communityId != 0) {
                         finishFragment();
-                    } else if (GgramConfig.isHideBottomBar) {
-                        GgramSideMenu.show(DialogsActivity.this);
                     }
                 } else if (id == 1) {
                     if (getParentActivity() == null) {
@@ -7053,17 +7031,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         additionNavigationBarHeight = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
         additionFloatingButtonOffset = (hasMainTabs && !GgramConfig.isHideBottomBar) ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
         if (!onlySelect && folderId == 0 && communityId == 0 && searchString == null && actionBar != null) {
-            if (GgramConfig.isHideBottomBar) {
-                if (!(actionBar.getBackButtonDrawable() instanceof MenuDrawable)) {
-                    MenuDrawable menuDrawable = new MenuDrawable();
-                    menuDrawable.setBackColor(getThemedColor(Theme.key_actionBarDefault));
-                    menuDrawable.setIconColor(getThemedColor(Theme.key_actionBarDefaultIcon));
-                    actionBar.setBackButtonDrawable(menuDrawable);
-                }
-            } else {
-                if (actionBar.getBackButtonDrawable() instanceof MenuDrawable) {
-                    actionBar.setBackButtonDrawable(null);
-                }
+            if (actionBar.getBackButtonDrawable() instanceof MenuDrawable) {
+                actionBar.setBackButtonDrawable(null);
             }
             actionBar.requestLayout();
         }
