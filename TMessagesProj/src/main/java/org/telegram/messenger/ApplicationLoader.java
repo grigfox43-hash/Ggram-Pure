@@ -370,7 +370,12 @@ public class ApplicationLoader extends Application {
         }
         if (enabled) {
             try {
-                applicationContext.startService(new Intent(applicationContext, NotificationsService.class));
+                Intent serviceIntent = new Intent(applicationContext, NotificationsService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    applicationContext.startForegroundService(serviceIntent);
+                } else {
+                    applicationContext.startService(serviceIntent);
+                }
             } catch (Throwable ignore) {
 
             }
@@ -398,16 +403,12 @@ public class ApplicationLoader extends Application {
 
     private void initPushServices() {
         AndroidUtilities.runOnUIThread(() -> {
-            if (getPushProvider().hasServices()) {
-                getPushProvider().onRequestPushToken();
-            } else {
-                if (BuildVars.LOGS_ENABLED) {
-                    FileLog.d("No valid " + getPushProvider().getLogTitle() + " APK found.");
-                }
-                SharedConfig.pushStringStatus = "__NO_GOOGLE_PLAY_SERVICES__";
-                PushListenerController.sendRegistrationToServer(getPushProvider().getPushType(), null);
+            if (BuildVars.LOGS_ENABLED) {
+                FileLog.d("Ggram Standalone: activating native MTProto Push updates");
             }
-        }, 1000);
+            SharedConfig.pushStringStatus = "__NO_GOOGLE_PLAY_SERVICES__";
+            PushListenerController.sendRegistrationToServer(PushListenerController.PUSH_TYPE_FIREBASE, null);
+        }, 500);
     }
 
     private boolean checkPlayServices() {

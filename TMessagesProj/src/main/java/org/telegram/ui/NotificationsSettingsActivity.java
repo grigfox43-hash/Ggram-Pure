@@ -765,6 +765,17 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                 MessagesController.getGlobalNotificationsSettings().edit().putBoolean("pushService", !enabled).commit();
                 getMessagesController().keepAliveService = !enabled;
                 ApplicationLoader.startPushService();
+                if (!enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getParentActivity() != null) {
+                    try {
+                        android.os.PowerManager pm = (android.os.PowerManager) getParentActivity().getSystemService(Context.POWER_SERVICE);
+                        if (pm != null && !pm.isIgnoringBatteryOptimizations(getParentActivity().getPackageName())) {
+                            Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                            intent.setData(android.net.Uri.parse("package:" + getParentActivity().getPackageName()));
+                            getParentActivity().startActivity(intent);
+                        }
+                    } catch (Throwable ignore) {
+                    }
+                }
             } else if (position == callsVibrateRow) {
                 if (getParentActivity() == null) {
                     return;

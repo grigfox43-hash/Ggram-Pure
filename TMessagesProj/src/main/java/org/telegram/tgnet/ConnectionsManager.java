@@ -8,6 +8,7 @@ import android.content.pm.InstallSourceInfo;
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -273,8 +274,7 @@ public class ConnectionsManager extends BaseController {
             pushString = SharedConfig.pushStringStatus;
         }
         if (TextUtils.isEmpty(pushString)) {
-            String tag = SharedConfig.pushType == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : "HUAWEI";
-            pushString = SharedConfig.pushStringStatus = "__" + tag + "_GENERATING_SINCE_" + getCurrentTime() + "__";
+            pushString = SharedConfig.pushStringStatus = "__NO_GOOGLE_PLAY_SERVICES__";
         }
         return pushString;
     }
@@ -690,8 +690,7 @@ public class ConnectionsManager extends BaseController {
             pushString = status;
         }
         if (TextUtils.isEmpty(pushString)) {
-            String tag = type == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : "HUAWEI";
-            pushString = SharedConfig.pushStringStatus = "__" + tag + "_GENERATING_SINCE_" + getInstance(0).getCurrentTime() + "__";
+            pushString = SharedConfig.pushStringStatus = "__NO_GOOGLE_PLAY_SERVICES__";
         }
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
             native_setRegId(a, pushString);
@@ -788,6 +787,23 @@ public class ConnectionsManager extends BaseController {
         }
     }
 
+    private static PowerManager.WakeLock pushWakeLock;
+    private static void acquirePushWakeLock() {
+        try {
+            if (pushWakeLock == null && ApplicationLoader.applicationContext != null) {
+                PowerManager pm = (PowerManager) ApplicationLoader.applicationContext.getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    pushWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ggram:push_wakelock");
+                    pushWakeLock.setReferenceCounted(false);
+                }
+            }
+            if (pushWakeLock != null) {
+                pushWakeLock.acquire(10000);
+            }
+        } catch (Throwable ignore) {
+        }
+    }
+
     public static void onUnparsedMessageReceived(long address, final int currentAccount, long messageId) {
         try {
             NativeByteBuffer buff = NativeByteBuffer.wrap(address);
@@ -797,6 +813,7 @@ public class ConnectionsManager extends BaseController {
             final TLObject message = TLClassStore.Instance().TLdeserialize(buff, constructor, true);
             FileLog.dumpUnparsedMessage(message, messageId, currentAccount);
             if (message instanceof TLRPC.Updates) {
+                acquirePushWakeLock();
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d("java received " + message);
                 }
