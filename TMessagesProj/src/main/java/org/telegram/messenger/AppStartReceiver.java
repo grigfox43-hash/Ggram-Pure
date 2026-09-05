@@ -15,23 +15,6 @@ import android.content.Intent;
 public class AppStartReceiver extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent intent) {
-        if (intent == null) {
-            return;
-        }
-        String action = intent.getAction();
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
-            Intent.ACTION_MY_PACKAGE_REPLACED.equals(action) ||
-            "org.telegram.start".equals(action) ||
-            "android.intent.action.QUICKBOOT_POWERON".equals(action) ||
-            "com.htc.intent.action.QUICKBOOT_POWERON".equals(action)) {
-            AndroidUtilities.runOnUIThread(() -> {
-                SharedConfig.loadConfig();
-                if (SharedConfig.passcodeHash.length() > 0) {
-                    SharedConfig.appLocked = true;
-                    SharedConfig.saveConfig();
-                }
-                ApplicationLoader.startPushService();
-            });
-        }
+        // Ggram should only run when explicitly opened by the user, not on boot or wake events
     }
 }

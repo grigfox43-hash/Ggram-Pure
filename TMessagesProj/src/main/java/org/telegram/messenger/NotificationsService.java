@@ -22,6 +22,7 @@ import android.os.IBinder;
 
 import androidx.core.app.NotificationCompat;
 
+import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.LaunchActivity;
 
 public class NotificationsService extends Service {
@@ -39,7 +40,7 @@ public class NotificationsService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForegroundInternal();
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     private void startForegroundInternal() {
@@ -115,12 +116,20 @@ public class NotificationsService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
-        if (preferences.getBoolean("pushService", true)) {
-            Intent intent = new Intent("org.telegram.start");
-            intent.setPackage(getPackageName());
-            sendBroadcast(intent);
+        try {
+            stopForeground(true);
+        } catch (Throwable ignore) {
         }
+        stopSelf();
+        try {
+            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                ConnectionsManager.getInstance(a).setAppPaused(true, false);
+            }
+        } catch (Throwable ignore) {
+        }
+        // App removed from Recents: terminate process cleanly so it never hangs in background
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(0);
     }
 
     @Override
@@ -129,12 +138,6 @@ public class NotificationsService extends Service {
         try {
             stopForeground(true);
         } catch (Throwable ignore) {
-        }
-        SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
-        if (preferences.getBoolean("pushService", true)) {
-            Intent intent = new Intent("org.telegram.start");
-            intent.setPackage(getPackageName());
-            sendBroadcast(intent);
         }
     }
 }
