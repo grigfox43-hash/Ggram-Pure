@@ -841,6 +841,9 @@ public class ConnectionsManager extends BaseController {
         AndroidUtilities.runOnUIThread(() -> {
             getInstance(currentAccount).connectionState = state;
             AccountInstance.getInstance(currentAccount).getNotificationCenter().postNotificationName(NotificationCenter.didUpdateConnectionState);
+            try {
+                org.ggram.network.GgramProxyManager.onConnectionState(state);
+            } catch (Throwable ignore) {}
         });
     }
 

@@ -1,76 +1,90 @@
 {
-  "version": 1,
-  "updated_at": "2026-09-04T19:40:00Z",
-  "description": "Ggram Pure Anti-Censorship Dynamic Proxy Pool",
+  "version": 2,
+  "updated_at": "2026-09-05T08:20:00Z",
+  "description": "Ggram Pure Russia Verified Fake-TLS Proxies",
   "proxies": [
     {
-      "name": "Ggram Cloud 1 (UK Fake-TLS)",
-      "server": "silnet.varfootball.co.uk",
+      "name": "⚡ Russia Fast 1 (Port 443)",
+      "server": "194.117.64.10",
+      "port": 443,
+      "secret": "ee1603010200010001fc030386e24c3add626973636f7474692e79656b74616e65742e636f6d",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "⚡ Russia Fast 2 (Port 443)",
+      "server": "194.117.64.5",
+      "port": 443,
+      "secret": "ee1603010200010001fc030386e24c3add626973636f7474692e79656b74616e65742e636f6d",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "🎮 Steam CDN Fake-TLS 1",
+      "server": "udymau.server-space52.info",
+      "port": 443,
+      "secret": "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "🎮 Steam CDN Fake-TLS 2",
+      "server": "server3.server-space52.info",
+      "port": 443,
+      "secret": "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "🎮 Steam CDN Fake-TLS 3",
+      "server": "ping-pong.mangom-kangom.info",
+      "port": 443,
+      "secret": "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "🌐 Meow Network (Port 443)",
+      "server": "t.meow-network.com",
+      "port": 443,
+      "secret": "ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d",
+      "type": "MTPROTO"
+    },
+    {
+      "name": "🛡️ Cloud EU 1 (Port 2053)",
+      "server": "run.golgoli2.co.uk",
       "port": 2053,
       "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
       "type": "MTPROTO"
     },
     {
-      "name": "Ggram Cloud 2 (UK Fake-TLS)",
-      "server": "noron.talebi.co.uk",
+      "name": "🛡️ Cloud EU 2 (Port 2096)",
+      "server": "new.lambforkebeb.co.uk",
       "port": 2096,
       "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
       "type": "MTPROTO"
     },
     {
-      "name": "Ggram Cloud 3 (UK Fake-TLS)",
-      "server": "new2.lambforkebeb.co.uk",
-      "port": 2096,
-      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
-      "type": "MTPROTO"
-    },
-    {
-      "name": "Ggram Cloud 4 (UK Fake-TLS)",
-      "server": "noone.lavazemi1.co.uk",
-      "port": 2083,
-      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
-      "type": "MTPROTO"
-    },
-    {
-      "name": "Ggram Cloud 5 (UK Fake-TLS)",
-      "server": "silver.ciaude.co.uk",
-      "port": 2096,
-      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
-      "type": "MTPROTO"
-    },
-    {
-      "name": "Ggram Cloud 6 (UK Fake-TLS)",
+      "name": "🛡️ Cloud EU 3 (Port 2096)",
       "server": "gallery.talebi.co.uk",
       "port": 2096,
       "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
       "type": "MTPROTO"
     },
     {
-      "name": "Ggram Fast 7",
-      "server": "nontanori.noshabekoka.info",
-      "port": 7799,
-      "secret": "dd10400103324995b07c030386e886e7f1",
+      "name": "🛡️ Cloud EU 4 (Port 8880)",
+      "server": "you.foltmeingop.co.uk",
+      "port": 8880,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
       "type": "MTPROTO"
     },
     {
-      "name": "Ggram Fast 8",
-      "server": "teranhavaei.charkhofalak.info",
-      "port": 7799,
-      "secret": "dd10400103324995b07c030386e886e7f1",
+      "name": "🛡️ Cloud EU 5 (Port 8443)",
+      "server": "uptime.speed-benz.co.uk",
+      "port": 8443,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
       "type": "MTPROTO"
     },
     {
-      "name": "Ggram Fast 9",
-      "server": "vahshianeh.ghodratitarin.info",
-      "port": 7799,
-      "secret": "dd10400103324995b07c030386e886e7f1",
-      "type": "MTPROTO"
-    },
-    {
-      "name": "Ggram Fast 10",
-      "server": "resturant.zereshkpolo.info",
-      "port": 7799,
-      "secret": "dd10400103324995b07c030386e886e7f1",
+      "name": "🛡️ Cloud EU 6 (Port 2053)",
+      "server": "hadaf.golgoli2.co.uk",
+      "port": 2053,
+      "secret": "eeNEgYdJvXrFGRMCIMJdCQ",
       "type": "MTPROTO"
     }
   ]

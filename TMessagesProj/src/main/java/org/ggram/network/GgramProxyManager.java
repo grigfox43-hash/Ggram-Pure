@@ -8,6 +8,7 @@ import android.util.Log;
 import org.ggram.config.GgramConfig;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MessagesController;
@@ -81,12 +82,27 @@ public class GgramProxyManager {
     private static final ExecutorService executor = Executors.newFixedThreadPool(8);
     private static volatile boolean isInitialized = false;
 
+    private static Runnable rotateRunnable = null;
+    private static int currentProxyIndex = 0;
+
     public static void init(Context context) {
         if (isInitialized) return;
         isInitialized = true;
 
         setupDefaultProxies();
         Log.i(TAG, "GgramProxyManager initialized with " + proxyList.size() + " default anti-censorship nodes");
+
+        // First launch & authorization fix:
+        // If proxy is not enabled or not set, activate node #1 immediately so first login/SMS request works!
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
+        String currentAddress = preferences.getString("proxy_ip", "");
+        if (!proxyEnabled || TextUtils.isEmpty(currentAddress) || SharedConfig.currentProxy == null) {
+            if (!proxyList.isEmpty()) {
+                Log.i(TAG, "First launch/login: Auto-activating Russian Fake-TLS MTProto proxy immediately");
+                applyProxyToTelegram(proxyList.get(0));
+            }
+        }
 
         // Sync from GitLab dynamically in background
         fetchRemoteProxies();
@@ -95,17 +111,52 @@ public class GgramProxyManager {
     private static void setupDefaultProxies() {
         if (!proxyList.isEmpty()) return;
 
-        // Verified Fake-TLS and low latency MTProto nodes
-        addDefaultNode("1", "Ggram UK Cloud 1", ProxyType.MTPROTO, "silnet.varfootball.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("2", "Ggram UK Cloud 2", ProxyType.MTPROTO, "noron.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("3", "Ggram UK Cloud 3", ProxyType.MTPROTO, "new2.lambforkebeb.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("4", "Ggram UK Cloud 4", ProxyType.MTPROTO, "noone.lavazemi1.co.uk", 2083, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("5", "Ggram UK Cloud 5", ProxyType.MTPROTO, "silver.ciaude.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("6", "Ggram UK Cloud 6", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("7", "Ggram Fast 7", ProxyType.MTPROTO, "nontanori.noshabekoka.info", 7799, "dd10400103324995b07c030386e886e7f1");
-        addDefaultNode("8", "Ggram Fast 8", ProxyType.MTPROTO, "teranhavaei.charkhofalak.info", 7799, "dd10400103324995b07c030386e886e7f1");
-        addDefaultNode("9", "Ggram Fast 9", ProxyType.MTPROTO, "vahshianeh.ghodratitarin.info", 7799, "dd10400103324995b07c030386e886e7f1");
-        addDefaultNode("10", "Ggram Fast 10", ProxyType.MTPROTO, "resturant.zereshkpolo.info", 7799, "dd10400103324995b07c030386e886e7f1");
+        // Verified Russian-ready Fake-TLS (ee) and low latency MTProto nodes
+        addDefaultNode("1", "⚡ Russia Fast 1 (Port 443)", ProxyType.MTPROTO, "194.117.64.10", 443, "ee1603010200010001fc030386e24c3add626973636f7474692e79656b74616e65742e636f6d");
+        addDefaultNode("2", "⚡ Russia Fast 2 (Port 443)", ProxyType.MTPROTO, "194.117.64.5", 443, "ee1603010200010001fc030386e24c3add626973636f7474692e79656b74616e65742e636f6d");
+        addDefaultNode("3", "🎮 Steam CDN Fake-TLS 1", ProxyType.MTPROTO, "udymau.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("4", "🎮 Steam CDN Fake-TLS 2", ProxyType.MTPROTO, "server3.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("5", "🎮 Steam CDN Fake-TLS 3", ProxyType.MTPROTO, "ping-pong.mangom-kangom.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("6", "🌐 Meow Network (Port 443)", ProxyType.MTPROTO, "t.meow-network.com", 443, "ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d");
+        addDefaultNode("7", "🛡️ Cloud EU 1 (Port 2053)", ProxyType.MTPROTO, "run.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("8", "🛡️ Cloud EU 2 (Port 2096)", ProxyType.MTPROTO, "new.lambforkebeb.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("9", "🛡️ Cloud EU 3 (Port 2096)", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("10", "🛡️ Cloud EU 4 (Port 8880)", ProxyType.MTPROTO, "you.foltmeingop.co.uk", 8880, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("11", "🛡️ Cloud EU 5 (Port 8443)", ProxyType.MTPROTO, "uptime.speed-benz.co.uk", 8443, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("12", "🛡️ Cloud EU 6 (Port 2053)", ProxyType.MTPROTO, "hadaf.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
+    }
+
+    public static void onConnectionState(int state) {
+        if (!GgramConfig.isAutoProxyEnabled) return;
+
+        if (state == ConnectionsManager.ConnectionStateConnected) {
+            if (rotateRunnable != null) {
+                AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
+                rotateRunnable = null;
+            }
+            return;
+        }
+
+        if (state == ConnectionsManager.ConnectionStateConnecting ||
+            state == ConnectionsManager.ConnectionStateWaitingForNetwork ||
+            state == ConnectionsManager.ConnectionStateConnectingToProxy) {
+
+            if (rotateRunnable == null) {
+                rotateRunnable = () -> {
+                    rotateRunnable = null;
+                    rotateToNextProxy();
+                };
+                AndroidUtilities.runOnUIThread(rotateRunnable, 7000);
+            }
+        }
+    }
+
+    public static synchronized void rotateToNextProxy() {
+        if (proxyList.isEmpty()) return;
+        currentProxyIndex = (currentProxyIndex + 1) % proxyList.size();
+        ProxyServer next = proxyList.get(currentProxyIndex);
+        Log.i(TAG, "Auto-failover: rotating to next proxy node: " + next.host + ":" + next.port);
+        applyProxyToTelegram(next);
     }
 
     private static void addDefaultNode(String id, String name, ProxyType type, String host, int port, String secret) {
