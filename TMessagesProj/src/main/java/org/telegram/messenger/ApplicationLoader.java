@@ -216,6 +216,9 @@ public class ApplicationLoader extends Application {
                         ConnectionsManager.getInstance(a).checkConnection();
                         FileLoader.getInstance(a).onNetworkChanged(isSlow);
                     }
+                    try {
+                        org.ggram.network.GgramProxyManager.onNetworkChanged(context);
+                    } catch (Throwable ignore) {}
                 }
             };
             IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);

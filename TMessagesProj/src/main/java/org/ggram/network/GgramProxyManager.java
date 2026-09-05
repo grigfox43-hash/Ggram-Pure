@@ -2,6 +2,11 @@ package org.ggram.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -85,6 +90,66 @@ public class GgramProxyManager {
     private static Runnable rotateRunnable = null;
     private static int currentProxyIndex = 0;
 
+    public static boolean isVpnActive(Context context) {
+        if (context == null) return false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Network activeNetwork = cm.getActiveNetwork();
+                if (activeNetwork != null) {
+                    NetworkCapabilities caps = cm.getNetworkCapabilities(activeNetwork);
+                    if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        return true;
+                    }
+                }
+                Network[] allNetworks = cm.getAllNetworks();
+                if (allNetworks != null) {
+                    for (Network n : allNetworks) {
+                        NetworkCapabilities caps = cm.getNetworkCapabilities(n);
+                        if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_VPN);
+                if (info != null && info.isConnected()) {
+                    return true;
+                }
+            }
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
+        return false;
+    }
+
+    public static void onNetworkChanged(Context context) {
+        if (!GgramConfig.isAutoProxyEnabled) return;
+        boolean vpn = isVpnActive(context);
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
+
+        if (vpn) {
+            // VPN turned ON -> Disable proxy so Telegram routes cleanly via VPN
+            if (proxyEnabled) {
+                Log.i(TAG, "VPN is active: auto-disabling MTProto proxy to avoid conflict");
+                disableProxyForTelegram();
+            }
+        } else {
+            // VPN turned OFF -> Re-enable proxy if needed
+            if (!proxyEnabled) {
+                Log.i(TAG, "VPN is not active: auto-enabling MTProto proxy");
+                if (SharedConfig.currentProxy != null) {
+                    applyProxyInfoToTelegram(SharedConfig.currentProxy);
+                } else if (!proxyList.isEmpty()) {
+                    applyProxyToTelegram(proxyList.get(0));
+                }
+            }
+        }
+    }
+
     public static void init(Context context) {
         if (isInitialized) return;
         isInitialized = true;
@@ -92,15 +157,20 @@ public class GgramProxyManager {
         setupDefaultProxies();
         Log.i(TAG, "GgramProxyManager initialized with " + proxyList.size() + " default anti-censorship nodes");
 
-        // First launch & authorization fix:
-        // If proxy is not enabled or not set, activate node #1 immediately so first login/SMS request works!
-        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
-        String currentAddress = preferences.getString("proxy_ip", "");
-        if (!proxyEnabled || TextUtils.isEmpty(currentAddress) || SharedConfig.currentProxy == null) {
-            if (!proxyList.isEmpty()) {
-                Log.i(TAG, "First launch/login: Auto-activating Russian Fake-TLS MTProto proxy immediately");
-                applyProxyToTelegram(proxyList.get(0));
+        boolean vpnActive = isVpnActive(context);
+        if (vpnActive) {
+            Log.i(TAG, "System VPN active at launch: keeping proxy disabled");
+            disableProxyForTelegram();
+        } else {
+            // VPN is NOT active - ensure Russian Fake-TLS proxy is active for login/SMS
+            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+            boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
+            String currentAddress = preferences.getString("proxy_ip", "");
+            if (!proxyEnabled || TextUtils.isEmpty(currentAddress) || SharedConfig.currentProxy == null) {
+                if (!proxyList.isEmpty()) {
+                    Log.i(TAG, "No VPN: Auto-activating Russian Fake-TLS MTProto proxy immediately");
+                    applyProxyToTelegram(proxyList.get(0));
+                }
             }
         }
 
@@ -129,6 +199,15 @@ public class GgramProxyManager {
     public static void onConnectionState(int state) {
         if (!GgramConfig.isAutoProxyEnabled) return;
 
+        Context context = ApplicationLoader.applicationContext;
+        if (isVpnActive(context)) {
+            if (rotateRunnable != null) {
+                AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
+                rotateRunnable = null;
+            }
+            return;
+        }
+
         if (state == ConnectionsManager.ConnectionStateConnected) {
             if (rotateRunnable != null) {
                 AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
@@ -144,7 +223,9 @@ public class GgramProxyManager {
             if (rotateRunnable == null) {
                 rotateRunnable = () -> {
                     rotateRunnable = null;
-                    rotateToNextProxy();
+                    if (!isVpnActive(ApplicationLoader.applicationContext)) {
+                        rotateToNextProxy();
+                    }
                 };
                 AndroidUtilities.runOnUIThread(rotateRunnable, 7000);
             }
@@ -303,6 +384,12 @@ public class GgramProxyManager {
     }
 
     public static void applyProxyToTelegram(ProxyServer proxy) {
+        if (proxy == null) return;
+        Context context = ApplicationLoader.applicationContext;
+        if (isVpnActive(context)) {
+            Log.i(TAG, "VPN is active, skipping proxy application to avoid conflict");
+            return;
+        }
         try {
             SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(
                     proxy.host,
@@ -311,10 +398,23 @@ public class GgramProxyManager {
                     proxy.password != null ? proxy.password : "",
                     proxy.secret != null ? proxy.secret : ""
             );
+            applyProxyInfoToTelegram(info);
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    public static void applyProxyInfoToTelegram(SharedConfig.ProxyInfo info) {
+        if (info == null) return;
+        Context context = ApplicationLoader.applicationContext;
+        if (isVpnActive(context)) {
+            Log.i(TAG, "VPN is active, skipping proxy application to avoid conflict");
+            return;
+        }
+        try {
             SharedConfig.addProxy(info);
             SharedConfig.currentProxy = info;
 
-            Context context = ApplicationLoader.applicationContext;
             if (context != null) {
                 SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                 preferences.edit()
@@ -329,6 +429,23 @@ public class GgramProxyManager {
             }
 
             ConnectionsManager.setProxySettings(true, info.address, info.port, info.username, info.password, info.secret);
+            Log.i(TAG, "Proxy activated: " + info.address + ":" + info.port);
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    public static void disableProxyForTelegram() {
+        try {
+            Context context = ApplicationLoader.applicationContext;
+            if (context != null) {
+                SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+                preferences.edit()
+                        .putBoolean("proxy_enabled", false)
+                        .apply();
+            }
+            ConnectionsManager.setProxySettings(false, "", 1080, "", "", "");
+            Log.i(TAG, "Proxy disabled: direct VPN connection in use");
         } catch (Exception e) {
             FileLog.e(e);
         }
