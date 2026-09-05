@@ -314,8 +314,8 @@ public class SharedConfig {
     public static boolean fontSizeIsDefault;
     public static int bubbleRadius = 17;
     public static int ivFontSize = 16;
-    public static boolean proxyRotationEnabled;
-    public static int proxyRotationTimeout;
+    public static boolean proxyRotationEnabled = true;
+    public static int proxyRotationTimeout = 0;
     public static int messageSeenHintCount;
     public static int emojiInteractionsHintCount;
     public static int dayNightThemeSwitchHintCount;
@@ -528,7 +528,7 @@ public class SharedConfig {
             passportConfigJson = preferences.getString("passportConfigJson", "");
             passportConfigHash = preferences.getInt("passportConfigHash", 0);
             storageCacheDir = preferences.getString("storageCacheDir", null);
-            proxyRotationEnabled = preferences.getBoolean("proxyRotationEnabled", false);
+            proxyRotationEnabled = preferences.getBoolean("proxyRotationEnabled", true);
             proxyRotationTimeout = preferences.getInt("proxyRotationTimeout", ProxyRotationController.DEFAULT_TIMEOUT_INDEX);
             String authKeyString = preferences.getString("pushAuthKey", null);
             if (!TextUtils.isEmpty(authKeyString)) {

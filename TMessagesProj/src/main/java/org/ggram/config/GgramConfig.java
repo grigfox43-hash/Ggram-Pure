@@ -46,7 +46,7 @@ public class GgramConfig {
     public static boolean isSaveRoundVideosAsMp4 = true;
     public static boolean isVoiceToTextEnabled = true;
     public static boolean isHqRoundVideo = true;
-    public static boolean isAutoProxyEnabled = true;
+    public static boolean isAutoProxyEnabled = false;
 
     // Protection & Bypass
     public static boolean isNoForwardsBypassEnabled = true;
@@ -97,7 +97,7 @@ public class GgramConfig {
         isSaveRoundVideosAsMp4 = prefs.getBoolean("save_round_mp4", true);
         isVoiceToTextEnabled = prefs.getBoolean("voice_to_text", true);
         isHqRoundVideo = prefs.getBoolean("hq_round_video", true);
-        isAutoProxyEnabled = prefs.getBoolean("auto_proxy", true);
+        isAutoProxyEnabled = prefs.getBoolean("auto_proxy", false);
 
         isNoForwardsBypassEnabled = prefs.getBoolean("no_forwards_bypass", true);
         isFlagSecureBypassEnabled = prefs.getBoolean("flag_secure_bypass", true);

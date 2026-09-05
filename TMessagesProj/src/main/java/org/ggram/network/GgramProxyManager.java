@@ -89,6 +89,7 @@ public class GgramProxyManager {
 
     private static Runnable rotateRunnable = null;
     private static int currentProxyIndex = 0;
+    private static boolean proxyWasEnabledBeforeVpn = false;
 
     public static boolean isVpnActive(Context context) {
         if (context == null) return false;
@@ -126,21 +127,22 @@ public class GgramProxyManager {
     }
 
     public static void onNetworkChanged(Context context) {
-        if (!GgramConfig.isAutoProxyEnabled) return;
         boolean vpn = isVpnActive(context);
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
 
         if (vpn) {
-            // VPN turned ON -> Disable proxy so Telegram routes cleanly via VPN
+            // VPN turned ON -> Disable proxy to avoid connection conflicts
             if (proxyEnabled) {
                 Log.i(TAG, "VPN is active: auto-disabling MTProto proxy to avoid conflict");
+                proxyWasEnabledBeforeVpn = true;
                 disableProxyForTelegram();
             }
         } else {
-            // VPN turned OFF -> Re-enable proxy if needed
-            if (!proxyEnabled) {
-                Log.i(TAG, "VPN is not active: auto-enabling MTProto proxy");
+            // VPN turned OFF -> Restore proxy only if it was active before VPN
+            if (proxyWasEnabledBeforeVpn && !proxyEnabled) {
+                Log.i(TAG, "VPN is not active: restoring MTProto proxy that was active before VPN");
+                proxyWasEnabledBeforeVpn = false;
                 if (SharedConfig.currentProxy != null) {
                     applyProxyInfoToTelegram(SharedConfig.currentProxy);
                 } else if (!proxyList.isEmpty()) {
@@ -159,20 +161,14 @@ public class GgramProxyManager {
 
         boolean vpnActive = isVpnActive(context);
         if (vpnActive) {
-            Log.i(TAG, "System VPN active at launch: keeping proxy disabled");
-            disableProxyForTelegram();
-        } else {
-            // VPN is NOT active - ensure Russian Fake-TLS proxy is active for login/SMS
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-            boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
-            String currentAddress = preferences.getString("proxy_ip", "");
-            if (!proxyEnabled || TextUtils.isEmpty(currentAddress) || SharedConfig.currentProxy == null) {
-                if (!proxyList.isEmpty()) {
-                    Log.i(TAG, "No VPN: Auto-activating Russian Fake-TLS MTProto proxy immediately");
-                    applyProxyToTelegram(proxyList.get(0));
-                }
+            if (preferences.getBoolean("proxy_enabled", false)) {
+                Log.i(TAG, "System VPN active at launch: disabling active proxy to avoid conflict");
+                proxyWasEnabledBeforeVpn = true;
+                disableProxyForTelegram();
             }
         }
+        // Direct connection by default! No forced proxy on startup.
 
         // Sync from GitLab dynamically in background
         fetchRemoteProxies();
@@ -181,23 +177,32 @@ public class GgramProxyManager {
     private static void setupDefaultProxies() {
         if (!proxyList.isEmpty()) return;
 
-        // Verified Russian-ready Fake-TLS (ee) and low latency MTProto nodes
-        addDefaultNode("1", "⚡ Russia Fast 1 (Port 443)", ProxyType.MTPROTO, "194.117.64.10", 443, "ee1603010200010001fc030386e24c3add626973636f7474692e79656b74616e65742e636f6d");
-        addDefaultNode("2", "⚡ Russia Fast 2 (Port 443)", ProxyType.MTPROTO, "194.117.64.5", 443, "ee1603010200010001fc030386e24c3add626973636f7474692e79656b74616e65742e636f6d");
-        addDefaultNode("3", "🎮 Steam CDN Fake-TLS 1", ProxyType.MTPROTO, "udymau.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("4", "🎮 Steam CDN Fake-TLS 2", ProxyType.MTPROTO, "server3.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("5", "🎮 Steam CDN Fake-TLS 3", ProxyType.MTPROTO, "ping-pong.mangom-kangom.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("6", "🌐 Meow Network (Port 443)", ProxyType.MTPROTO, "t.meow-network.com", 443, "ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d");
-        addDefaultNode("7", "🛡️ Cloud EU 1 (Port 2053)", ProxyType.MTPROTO, "run.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("8", "🛡️ Cloud EU 2 (Port 2096)", ProxyType.MTPROTO, "new.lambforkebeb.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("9", "🛡️ Cloud EU 3 (Port 2096)", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("10", "🛡️ Cloud EU 4 (Port 8880)", ProxyType.MTPROTO, "you.foltmeingop.co.uk", 8880, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("11", "🛡️ Cloud EU 5 (Port 8443)", ProxyType.MTPROTO, "uptime.speed-benz.co.uk", 8443, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("12", "🛡️ Cloud EU 6 (Port 2053)", ProxyType.MTPROTO, "hadaf.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
+        // Verified EU Fake-TLS (ee) and resilient MTProto nodes
+        addDefaultNode("1", "🛡️ Germany Fast (Port 443)", ProxyType.MTPROTO, "world-mordak.maraton-co.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("2", "🎮 Steam CDN Fake-TLS 1", ProxyType.MTPROTO, "udymau.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("3", "🎮 Steam CDN Fake-TLS 2", ProxyType.MTPROTO, "server3.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("4", "🎮 Steam CDN Fake-TLS 3", ProxyType.MTPROTO, "ping-pong.mangom-kangom.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("5", "🌐 Meow Network (Port 443)", ProxyType.MTPROTO, "t.meow-network.com", 443, "ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d");
+        addDefaultNode("6", "🛡️ Cloud EU 1 (Port 2053)", ProxyType.MTPROTO, "run.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("7", "🛡️ Cloud EU 2 (Port 2096)", ProxyType.MTPROTO, "new.lambforkebeb.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("8", "🛡️ Cloud EU 3 (Port 2096)", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("9", "🛡️ Cloud EU 4 (Port 8880)", ProxyType.MTPROTO, "you.foltmeingop.co.uk", 8880, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("10", "🛡️ Cloud EU 5 (Port 8443)", ProxyType.MTPROTO, "uptime.speed-benz.co.uk", 8443, "eeNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("11", "🛡️ Cloud EU 6 (Port 2053)", ProxyType.MTPROTO, "hadaf.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
     }
 
     public static void onConnectionState(int state) {
-        if (!GgramConfig.isAutoProxyEnabled) return;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
+
+        // Only rotate if the user has intentionally enabled proxy
+        if (!proxyEnabled) {
+            if (rotateRunnable != null) {
+                AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
+                rotateRunnable = null;
+            }
+            return;
+        }
 
         Context context = ApplicationLoader.applicationContext;
         if (isVpnActive(context)) {
@@ -227,7 +232,7 @@ public class GgramProxyManager {
                         rotateToNextProxy();
                     }
                 };
-                AndroidUtilities.runOnUIThread(rotateRunnable, 7000);
+                AndroidUtilities.runOnUIThread(rotateRunnable, 5000);
             }
         }
     }
@@ -257,7 +262,8 @@ public class GgramProxyManager {
             }
             if (TextUtils.isEmpty(jsonContent)) {
                 Log.w(TAG, "Remote proxy list unreachable, using built-in defaults");
-                if (GgramConfig.isAutoProxyEnabled && SharedConfig.currentProxy == null) {
+                SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+                if (preferences.getBoolean("proxy_enabled", false) && SharedConfig.currentProxy == null) {
                     autoSelectFastestProxy();
                 }
                 return;
@@ -298,7 +304,8 @@ public class GgramProxyManager {
                 FileLog.e(e);
             }
 
-            if (GgramConfig.isAutoProxyEnabled && SharedConfig.currentProxy == null) {
+            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+            if (preferences.getBoolean("proxy_enabled", false) && SharedConfig.currentProxy == null) {
                 autoSelectFastestProxy();
             }
         });
@@ -365,7 +372,8 @@ public class GgramProxyManager {
     }
 
     public static void autoSelectFastestProxy() {
-        if (!GgramConfig.isAutoProxyEnabled) return;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        if (!preferences.getBoolean("proxy_enabled", false)) return;
 
         pingAllProxies(results -> {
             ProxyServer fastest = null;

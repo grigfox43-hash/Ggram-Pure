@@ -13,7 +13,7 @@ import java.util.List;
 public class ProxyRotationController implements NotificationCenter.NotificationCenterDelegate {
     private final static ProxyRotationController INSTANCE = new ProxyRotationController();
 
-    public final static int DEFAULT_TIMEOUT_INDEX = 1;
+    public final static int DEFAULT_TIMEOUT_INDEX = 0;
     public final static List<Integer> ROTATION_TIMEOUTS = Arrays.asList(
             5, 10, 15, 30, 60
     );
