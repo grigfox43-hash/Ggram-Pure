@@ -9020,6 +9020,7 @@ public class Theme {
             key == key_chat_inMediaIcon || key == key_chat_inMediaIconSelected ||
             key == key_chat_inContactIcon || key == key_chat_outContactIcon ||
             key == key_location_sendLocationIcon || key == key_chat_recordedVoicePlayPause ||
+            key == key_chat_messagePanelVoicePressed ||
             key == key_fastScrollText) {
             return 0xFF18191D;
         }

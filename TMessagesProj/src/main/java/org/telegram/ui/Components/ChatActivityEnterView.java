@@ -2015,13 +2015,13 @@ public class ChatActivityEnterView extends FrameLayout implements
                 return;
             }
             micDrawable = getResources().getDrawable(R.drawable.input_mic_pressed).mutate();
-            micDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelVoicePressed), PorterDuff.Mode.MULTIPLY));
+            micDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
 
             cameraDrawable = getResources().getDrawable(R.drawable.input_video_pressed).mutate();
-            cameraDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelVoicePressed), PorterDuff.Mode.MULTIPLY));
+            cameraDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
 
             sendDrawable = getResources().getDrawable(R.drawable.attach_send).mutate();
-            sendDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelVoicePressed), PorterDuff.Mode.MULTIPLY));
+            sendDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
 
             micOutline = getResources().getDrawable(R.drawable.input_mic).mutate();
             micOutline.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_glass_defaultIcon), PorterDuff.Mode.MULTIPLY));
@@ -2456,6 +2456,16 @@ public class ChatActivityEnterView extends FrameLayout implements
             paint.setColor(getThemedColor(Theme.key_chat_messagePanelVoiceBackground));
             tinyWaveDrawable.paint.setColor(ColorUtils.setAlphaComponent(getThemedColor(Theme.key_chat_messagePanelVoiceBackground), (int) (255 * WaveDrawable.CIRCLE_ALPHA_2)));
             bigWaveDrawable.paint.setColor(ColorUtils.setAlphaComponent(getThemedColor(Theme.key_chat_messagePanelVoiceBackground), (int) (255 * WaveDrawable.CIRCLE_ALPHA_1)));
+
+            if (micDrawable != null) {
+                micDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
+            }
+            if (cameraDrawable != null) {
+                cameraDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
+            }
+            if (sendDrawable != null) {
+                sendDrawable.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
+            }
 
             paintAlpha = paint.getAlpha();
         }
@@ -6546,7 +6556,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         audioVideoButtonContainer.setAlpha(audioVideoButtonContainerForbidden ? 0.5f : 1.0f);
         audioVideoButtonContainer.invalidate();
         audioVideoSendButton.setColorFilter(new PorterDuffColorFilter(audioVideoButtonContainerForbidden ?
-            getThemedColor(Theme.key_glass_defaultIcon) : Color.WHITE, PorterDuff.Mode.SRC_IN));
+            getThemedColor(Theme.key_glass_defaultIcon) : getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
         audioVideoSendButton.invalidate();
         updateFieldHint(false);
         boolean currentModeVideo = isInVideoMode;
@@ -10378,7 +10388,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (botKeyboardView != null) {
             botKeyboardView.updateColors();
         }
-        audioVideoSendButton.setColorFilter(new PorterDuffColorFilter(audioVideoButtonContainerForbidden ? getThemedColor(Theme.key_glass_defaultIcon) : Color.WHITE, PorterDuff.Mode.SRC_IN));
+        audioVideoSendButton.setColorFilter(new PorterDuffColorFilter(audioVideoButtonContainerForbidden ? getThemedColor(Theme.key_glass_defaultIcon) : getThemedColor(Theme.key_chats_actionIcon), PorterDuff.Mode.SRC_IN));
         emojiButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_glass_defaultIcon), PorterDuff.Mode.SRC_IN));
         emojiButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector)));
         deleteRichDraftButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_glass_defaultIcon), PorterDuff.Mode.SRC_IN));
@@ -14843,7 +14853,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             priceText = new AnimatedTextView.AnimatedTextDrawable();
             priceText.setTextSize(dp(15));
             priceText.setTypeface(AndroidUtilities.bold());
-            priceText.setTextColor(0xFFFFFFFF);
+            priceText.setTextColor(isNewDesignSendButton ? Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider) : 0xFFFFFFFF);
             priceText.setGravity(Gravity.LEFT);
             priceText.setCallback(this);
             priceText.setOverrideFullWidth(AndroidUtilities.displaySize.x);
@@ -14859,7 +14869,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             loadingPaint.setStrokeCap(Paint.Cap.ROUND);
 
             count.setCallback(this);
-            count.setTextColor(0xFFFFFFFF);
+            count.setTextColor(isNewDesignSendButton ? Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider) : 0xFFFFFFFF);
             count.setTextSize(dp(12));
             count.setTypeface(AndroidUtilities.bold());
             count.setGravity(Gravity.CENTER);
@@ -15337,7 +15347,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         private int drawableColor;
 
         public void updateColors() {
-            int color = isNewDesignSendButton ? Color.WHITE : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
+            int color = isNewDesignSendButton ? Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider) : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
             if (color != drawableColor) {
                 drawableColor = color;
                 drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
@@ -15347,6 +15357,8 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
             if (isNewDesignSendButton) {
                 backgroundPaint.setColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
+                priceText.setTextColor(Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider));
+                count.setTextColor(Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider));
             } else if (shouldDrawBackground()) {
                 backgroundPaint.setColor(getFillColor());
             } else {

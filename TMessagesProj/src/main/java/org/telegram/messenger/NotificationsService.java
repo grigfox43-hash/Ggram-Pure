@@ -35,12 +35,26 @@ public class NotificationsService extends Service {
         super.onCreate();
         startForegroundInternal();
         ApplicationLoader.postInitApplication();
+        ensurePushConnectionsActive();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForegroundInternal();
+        ensurePushConnectionsActive();
         return START_NOT_STICKY;
+    }
+
+    private void ensurePushConnectionsActive() {
+        try {
+            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                if (UserConfig.getInstance(a).isClientActivated()) {
+                    ConnectionsManager.getInstance(a).setPushConnectionEnabled(true);
+                    ConnectionsManager.getInstance(a).resumeNetworkMaybe();
+                }
+            }
+        } catch (Throwable ignore) {
+        }
     }
 
     private void startForegroundInternal() {
@@ -53,7 +67,7 @@ public class NotificationsService extends Service {
                         channel = new NotificationChannel(
                                 CHANNEL_ID,
                                 "Служба уведомлений Ggram",
-                                NotificationManager.IMPORTANCE_MIN
+                                NotificationManager.IMPORTANCE_LOW
                         );
                         channel.setDescription("Фоновая доставка сообщений и звонков");
                         channel.setSound(null, null);
@@ -79,7 +93,7 @@ public class NotificationsService extends Service {
                     .setSmallIcon(R.drawable.notification)
                     .setContentTitle("Ggram")
                     .setContentText("Служба фоновых уведомлений активна")
-                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setOngoing(true)
                     .setSilent(true)
                     .setShowWhen(false)
@@ -88,13 +102,7 @@ public class NotificationsService extends Service {
 
             Notification notification = builder.build();
 
-            if (Build.VERSION.SDK_INT >= 34) {
-                startForeground(
-                        NOTIFICATION_ID,
-                        notification,
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC | ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
-                );
-            } else if (Build.VERSION.SDK_INT >= 29) {
+            if (Build.VERSION.SDK_INT >= 29) {
                 startForeground(
                         NOTIFICATION_ID,
                         notification,

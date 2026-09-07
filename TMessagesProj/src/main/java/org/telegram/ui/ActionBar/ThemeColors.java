@@ -508,7 +508,7 @@ public class ThemeColors {
         defaultColors[key_chat_goDownButtonCounter] = 0xffffffff;
         defaultColors[key_chat_goDownButtonCounterBackground] = TELEGRAM_COLOR;
         defaultColors[key_chat_messagePanelCancelInlineBot] = 0xffadadad;
-        defaultColors[key_chat_messagePanelVoicePressed] = 0xffffffff;
+        defaultColors[key_chat_messagePanelVoicePressed] = 0xff18191d;
         defaultColors[key_chat_messagePanelVoiceBackground] = TELEGRAM_COLOR;
         defaultColors[key_chat_messagePanelVoiceDelete] = 0xff737373;
         defaultColors[key_chat_messagePanelVoiceDuration] = 0xffffffff;
