@@ -688,10 +688,7 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
                 return;
             }
             if (item.viewType == VIEW_TYPE_CHECK) {
-                if (!getUserConfig().isPremium()) {
-                    showDialog(new PremiumFeatureBottomSheet(this, PremiumPreviewFragment.PREMIUM_FEATURE_FOLDER_TAGS, true));
-                    return;
-                }
+                // [Ggram] Folder tags toggle unlocked
                 TLRPC.TL_messages_toggleDialogFilterTags req = new TLRPC.TL_messages_toggleDialogFilterTags();
                 req.enabled = !getMessagesController().folderTags;
                 getMessagesController().setFolderTags(req.enabled);

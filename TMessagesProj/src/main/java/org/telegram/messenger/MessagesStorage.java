@@ -3336,7 +3336,7 @@ public class MessagesStorage extends BaseController {
                             changed = true;
                             filter.title_noanimate= newFilter.title_noanimate;
                         }
-                        final int color = (newFilter.flags & 134217728) != 0 ? newFilter.color : -1;
+                        final int color = (newFilter.flags & 134217728) != 0 ? newFilter.color : filter.color; // [Ggram] Preserve local folder color
                         if (filter.color != color) {
                             filter.color = color;
                             changed = true;

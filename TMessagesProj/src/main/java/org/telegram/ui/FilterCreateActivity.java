@@ -357,11 +357,10 @@ public class FilterCreateActivity extends BaseFragment {
             items.add(ItemInner.asShadow(LocaleController.getString(R.string.FilterExcludeInfo)));
         }
 
-        if (getMessagesController().folderTags || !getUserConfig().isPremium()) {
-            items.add(new ItemInner(VIEW_TYPE_HEADER_COLOR_PREVIEW, false));
-            items.add(new ItemInner(VIEW_TYPE_COLOR, false));
-            items.add(ItemInner.asShadow(LocaleController.getString(R.string.FolderTagColorInfo)));
-        }
+        // [Ggram] Always show folder tag color section
+        items.add(new ItemInner(VIEW_TYPE_HEADER_COLOR_PREVIEW, false));
+        items.add(new ItemInner(VIEW_TYPE_COLOR, false));
+        items.add(ItemInner.asShadow(LocaleController.getString(R.string.FolderTagColorInfo)));
 
         if (invites.isEmpty()) {
             items.add(ItemInner.asHeader(LocaleController.getString(R.string.FilterShareFolder), true));
@@ -1685,22 +1684,18 @@ public class FilterCreateActivity extends BaseFragment {
                 case VIEW_TYPE_HEADER_COLOR_PREVIEW: {
                     folderTagsHeader = (HeaderCellColorPreview) holder.itemView;
                     folderTagsHeader.setPreviewText(AnimatedEmojiSpan.cloneSpans(newFilterName, -1, folderTagsHeader.getPreviewTextPaint().getFontMetricsInt(), .5f), false);
-                    folderTagsHeader.setPreviewColor(!getUserConfig().isPremium() ? -1 : newFilterColor, false);
+                    folderTagsHeader.setPreviewColor(newFilterColor, false);
                     folderTagsHeader.setText(LocaleController.getString(R.string.FolderTagColor));
                     break;
                 }
                 case VIEW_TYPE_COLOR: {
                     PeerColorActivity.PeerColorGrid cell = (PeerColorActivity.PeerColorGrid) holder.itemView;
-                    cell.setCloseAsLock(!getUserConfig().isPremium());
-                    cell.setSelected(!getUserConfig().isPremium() ? -1 : newFilterColor, false);
+                    cell.setCloseAsLock(false);
+                    cell.setSelected(newFilterColor, false);
                     cell.setOnColorClick(color -> {
-                        if (!getUserConfig().isPremium()) {
-                            showDialog(new PremiumFeatureBottomSheet(FilterCreateActivity.this, PremiumPreviewFragment.PREMIUM_FEATURE_FOLDER_TAGS, true));
-                            return;
-                        }
                         cell.setSelected(newFilterColor = color, true);
                         if (folderTagsHeader != null) {
-                            folderTagsHeader.setPreviewColor(!getUserConfig().isPremium() ? -1 : newFilterColor, true);
+                            folderTagsHeader.setPreviewColor(newFilterColor, true);
                         }
                         checkDoneButton(true);
                     });

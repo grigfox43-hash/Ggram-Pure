@@ -1579,7 +1579,7 @@ public class MessagesController extends BaseController implements NotificationCe
         secretWebpagePreview = mainPreferences.getInt("secretWebpage2", 2);
         maxGroupCount = mainPreferences.getInt("maxGroupCount", 200);
         maxMegagroupCount = mainPreferences.getInt("maxMegagroupCount", 10000);
-        maxRecentGifsCount = mainPreferences.getInt("maxRecentGifsCount", 200);
+        maxRecentGifsCount = Math.max(1000, mainPreferences.getInt("maxRecentGifsCount", 1000)); // [Ggram] Expanded GIF storage
         maxRecentStickersCount = mainPreferences.getInt("maxRecentStickersCount", 30);
         maxFaveStickersCount = mainPreferences.getInt("maxFaveStickersCount", 5);
         maxEditTime = mainPreferences.getInt("maxEditTime", 3600);
@@ -1639,8 +1639,8 @@ public class MessagesController extends BaseController implements NotificationCe
         dismissedSuggestions = mainPreferences.getStringSet("dismissedSuggestions", null);
         channelsLimitDefault = mainPreferences.getInt("channelsLimitDefault", 500);
         channelsLimitPremium = mainPreferences.getInt("channelsLimitPremium", 2 * channelsLimitDefault);
-        savedGifsLimitDefault = mainPreferences.getInt("savedGifsLimitDefault", 200);
-        savedGifsLimitPremium = mainPreferences.getInt("savedGifsLimitPremium", 400);
+        savedGifsLimitDefault = Math.max(1000, mainPreferences.getInt("savedGifsLimitDefault", 1000)); // [Ggram]
+        savedGifsLimitPremium = Math.max(1000, mainPreferences.getInt("savedGifsLimitPremium", 1000)); // [Ggram]
         stickersFavedLimitDefault = mainPreferences.getInt("stickersFavedLimitDefault", 5);
         stickersFavedLimitPremium = mainPreferences.getInt("stickersFavedLimitPremium", 200);
         maxPinnedDialogsCountDefault = org.ggram.config.GgramConfig.isUnlimitedPins ? 999 : mainPreferences.getInt("maxPinnedDialogsCountDefault", 5);
@@ -1764,7 +1764,7 @@ public class MessagesController extends BaseController implements NotificationCe
         savedDialogsPinnedLimitPremium = mainPreferences.getInt("savedDialogsPinnedLimitPremium", 6);
         storyQualityFull = mainPreferences.getBoolean("storyQualityFull", true);
         savedViewAsChats = mainPreferences.getBoolean("savedViewAsChats", false);
-        folderTags = mainPreferences.getBoolean("folderTags", false);
+        folderTags = mainPreferences.getBoolean("folderTags", true); // [Ggram] Default to true
         uploadPremiumSpeedupUpload = mainPreferences.getFloat("uploadPremiumSpeedupUpload", 10.0f);
         uploadPremiumSpeedupDownload = mainPreferences.getFloat("uploadPremiumSpeedupDownload", 10.0f);
         uploadPremiumSpeedupNotifyPeriod = mainPreferences.getInt("uploadPremiumSpeedupNotifyPeriod2", 3600);
@@ -2456,7 +2456,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 });
             } else if (response instanceof TLRPC.TL_messages_dialogFilters) {
                 TLRPC.TL_messages_dialogFilters res = (TLRPC.TL_messages_dialogFilters) response;
-                if (folderTags != res.tags_enabled) {
+                if (res.tags_enabled && folderTags != res.tags_enabled) {
                     setFolderTags(res.tags_enabled);
                     AndroidUtilities.runOnUIThread(() -> {
                         getNotificationCenter().postNotificationName(NotificationCenter.dialogFiltersUpdated);
@@ -3465,8 +3465,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 case "saved_gifs_limit_default": {
                     if (value.value instanceof TLRPC.TL_jsonNumber) {
                         TLRPC.TL_jsonNumber number = (TLRPC.TL_jsonNumber) value.value;
-                        if (number.value != savedGifsLimitDefault) {
-                            savedGifsLimitDefault = (int) number.value;
+                        int val = Math.max(1000, (int) number.value);
+                        if (val != savedGifsLimitDefault) {
+                            savedGifsLimitDefault = val;
                             editor.putInt("savedGifsLimitDefault", savedGifsLimitDefault);
                             changed = true;
                         }
@@ -3476,8 +3477,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 case "saved_gifs_limit_premium": {
                     if (value.value instanceof TLRPC.TL_jsonNumber) {
                         TLRPC.TL_jsonNumber number = (TLRPC.TL_jsonNumber) value.value;
-                        if (number.value != savedGifsLimitPremium) {
-                            savedGifsLimitPremium = (int) number.value;
+                        int val = Math.max(1000, (int) number.value);
+                        if (val != savedGifsLimitPremium) {
+                            savedGifsLimitPremium = val;
                             editor.putInt("savedGifsLimitPremium", savedGifsLimitPremium);
                             changed = true;
                         }

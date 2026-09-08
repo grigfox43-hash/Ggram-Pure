@@ -113,12 +113,7 @@ public class UserConfig extends BaseController {
     }
 
     public static boolean hasPremiumOnAccounts() {
-        for (int a = 0; a < MAX_ACCOUNT_COUNT; a++) {
-            if (AccountInstance.getInstance(a).getUserConfig().isClientActivated() && AccountInstance.getInstance(a).getUserConfig().getUserConfig().isPremium()) {
-                return true;
-            }
-        }
-        return false;
+        return true; // [Ggram] Client-side Premium unlocked for launcher icons, accounts, and features
     }
 
     public static int getMaxAccountCount() {
