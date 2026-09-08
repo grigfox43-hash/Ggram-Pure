@@ -7167,6 +7167,36 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     .setNegativeButton(getString(R.string.ContactsPermissionAlertNotNow), (dialog, which) -> MessagesController.getGlobalNotificationsSettings().edit().putBoolean("askedAboutFSILockscreen", true).commit())
                     .create());
             }
+        } else if (folderId == 0 && communityId == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getParentActivity() != null) {
+            try {
+                android.os.PowerManager pm = (android.os.PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+                if (pm != null && !pm.isIgnoringBatteryOptimizations(ApplicationLoader.applicationContext.getPackageName())) {
+                    if (!MessagesController.getGlobalNotificationsSettings().getBoolean("askedAboutBatteryOptimizations", false)) {
+                        MessagesController.getGlobalNotificationsSettings().edit().putBoolean("askedAboutBatteryOptimizations", true).commit();
+                        showDialog(new AlertDialog.Builder(getParentActivity())
+                            .setTitle("Фоновые уведомления")
+                            .setMessage("Чтобы уведомления приходили стабильно даже при длительной блокировке экрана, разрешите Ggram работу без ограничений батареи.")
+                            .setPositiveButton("Настроить", (dialog, which) -> {
+                                try {
+                                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                                    intent.setData(Uri.parse("package:" + ApplicationLoader.applicationContext.getPackageName()));
+                                    getParentActivity().startActivity(intent);
+                                } catch (Exception e) {
+                                    try {
+                                        Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                                        getParentActivity().startActivity(intent);
+                                    } catch (Exception ex) {
+                                        FileLog.e(ex);
+                                    }
+                                }
+                            })
+                            .setNegativeButton(getString(R.string.ContactsPermissionAlertNotNow), null)
+                            .create());
+                    }
+                }
+            } catch (Throwable t) {
+                FileLog.e(t);
+            }
         }
         showFiltersHint();
         if (viewPages != null) {

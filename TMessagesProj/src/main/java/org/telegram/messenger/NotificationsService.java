@@ -8,6 +8,7 @@
 
 package org.telegram.messenger;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -19,6 +20,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.SystemClock;
 
 import androidx.core.app.NotificationCompat;
 
@@ -27,22 +30,138 @@ import org.telegram.ui.LaunchActivity;
 
 public class NotificationsService extends Service {
 
+    public static final String ACTION_PUSH_PING = "org.ggram.PUSH_PING";
+    private static final long PING_INTERVAL_MS = 120 * 1000L; // 2 minutes keep-alive: ultra-low power consumption
+
     private static final int NOTIFICATION_ID = 9999;
     private static final String CHANNEL_ID = "ggram_push_channel";
+
+    private AlarmManager alarmManager;
+    private PendingIntent pingPendingIntent;
+    private PowerManager.WakeLock pingWakeLock;
 
     @Override
     public void onCreate() {
         super.onCreate();
         startForegroundInternal();
         ApplicationLoader.postInitApplication();
+        initPingAlarm();
         ensurePushConnectionsActive();
+        scheduleNextPing();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForegroundInternal();
+        if (intent != null && ACTION_PUSH_PING.equals(intent.getAction())) {
+            if (!ApplicationLoader.isScreenOn) {
+                acquirePingWakeLock(2000);
+                try {
+                    ensurePushConnectionsActive();
+                } finally {
+                    AndroidUtilities.runOnUIThread(this::releasePingWakeLock, 1000);
+                    scheduleNextPing();
+                }
+            } else {
+                scheduleNextPing();
+            }
+            return START_NOT_STICKY;
+        }
         ensurePushConnectionsActive();
+        scheduleNextPing();
         return START_NOT_STICKY;
+    }
+
+    private void initPingAlarm() {
+        try {
+            alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent pingIntent = new Intent(this, NotificationsService.class);
+            pingIntent.setAction(ACTION_PUSH_PING);
+            int pflags = PendingIntent.FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= 23) {
+                pflags |= PendingIntent.FLAG_IMMUTABLE;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                pingPendingIntent = PendingIntent.getForegroundService(this, 1001, pingIntent, pflags);
+            } else {
+                pingPendingIntent = PendingIntent.getService(this, 1001, pingIntent, pflags);
+            }
+        } catch (Throwable t) {
+            FileLog.e(t);
+        }
+    }
+
+    private void scheduleNextPing() {
+        if (alarmManager == null || pingPendingIntent == null) {
+            return;
+        }
+        long triggerAt = SystemClock.elapsedRealtime() + PING_INTERVAL_MS;
+        try {
+            boolean canExact = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                canExact = alarmManager.canScheduleExactAlarms();
+            }
+            if (canExact) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                } else {
+                    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                }
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                } else {
+                    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                }
+            }
+        } catch (SecurityException se) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                } else {
+                    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pingPendingIntent);
+                }
+            } catch (Throwable ignore) {
+            }
+        } catch (Throwable t) {
+            FileLog.e(t);
+        }
+    }
+
+    private void cancelPingAlarm() {
+        try {
+            if (alarmManager != null && pingPendingIntent != null) {
+                alarmManager.cancel(pingPendingIntent);
+            }
+        } catch (Throwable ignore) {
+        }
+    }
+
+    private void acquirePingWakeLock(long timeoutMs) {
+        try {
+            if (pingWakeLock == null) {
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    pingWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ggram:push_ping_wakelock");
+                    pingWakeLock.setReferenceCounted(false);
+                }
+            }
+            if (pingWakeLock != null) {
+                pingWakeLock.acquire(timeoutMs);
+            }
+        } catch (Throwable ignore) {
+        }
+    }
+
+    private void releasePingWakeLock() {
+        try {
+            if (pingWakeLock != null && pingWakeLock.isHeld()) {
+                pingWakeLock.release();
+            }
+        } catch (Throwable ignore) {
+        }
     }
 
     private void ensurePushConnectionsActive() {
@@ -124,6 +243,8 @@ public class NotificationsService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
+        cancelPingAlarm();
+        releasePingWakeLock();
         try {
             stopForeground(true);
         } catch (Throwable ignore) {
@@ -143,6 +264,8 @@ public class NotificationsService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        cancelPingAlarm();
+        releasePingWakeLock();
         try {
             stopForeground(true);
         } catch (Throwable ignore) {

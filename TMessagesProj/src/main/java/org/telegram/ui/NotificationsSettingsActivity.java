@@ -103,6 +103,7 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
 
     private int notificationsServiceRow;
     private int notificationsServiceConnectionRow;
+    private int batteryOptimizationRow;
 
     private int notificationsSectionRow;
     @Keep
@@ -215,6 +216,11 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
         otherSectionRow = rowCount++;
         notificationsServiceRow = rowCount++;
         notificationsServiceConnectionRow = rowCount++;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            batteryOptimizationRow = rowCount++;
+        } else {
+            batteryOptimizationRow = -1;
+        }
         androidAutoAlertRow = -1;
         repeatRow = rowCount++;
         resetSection2Row = rowCount++;
@@ -227,6 +233,14 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
         getMessagesController().reloadReactionsNotifySettings();
 
         return super.onFragmentCreate();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (adapter != null && batteryOptimizationRow != -1) {
+            adapter.notifyItemChanged(batteryOptimizationRow);
+        }
     }
 
     public void loadExceptions(Runnable onDone) {
@@ -776,6 +790,19 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                     } catch (Throwable ignore) {
                     }
                 }
+            } else if (position == batteryOptimizationRow && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getParentActivity() != null) {
+                try {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(android.net.Uri.parse("package:" + getParentActivity().getPackageName()));
+                    getParentActivity().startActivity(intent);
+                } catch (Exception e) {
+                    try {
+                        Intent intent = new Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                        getParentActivity().startActivity(intent);
+                    } catch (Exception ex) {
+                        FileLog.e(ex);
+                    }
+                }
             } else if (position == callsVibrateRow) {
                 if (getParentActivity() == null) {
                     return;
@@ -1195,6 +1222,10 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
                         }
                         textCell.setTextAndValue(getString("RepeatNotifications", R.string.RepeatNotifications), value, updateRepeatNotifications, false);
                         updateRepeatNotifications = false;
+                    } else if (position == batteryOptimizationRow && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getParentActivity() != null) {
+                        android.os.PowerManager pm = (android.os.PowerManager) getParentActivity().getSystemService(Context.POWER_SERVICE);
+                        boolean ignoring = pm != null && pm.isIgnoringBatteryOptimizations(getParentActivity().getPackageName());
+                        textCell.setTextAndValue("Оптимизация батареи", ignoring ? "Без ограничений (Рекомендуется)" : "Включена (нажмите)", false, true);
                     }
                     break;
                 }
