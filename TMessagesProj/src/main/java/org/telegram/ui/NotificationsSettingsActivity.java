@@ -235,14 +235,6 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
         return super.onFragmentCreate();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (adapter != null && batteryOptimizationRow != -1) {
-            adapter.notifyItemChanged(batteryOptimizationRow);
-        }
-    }
-
     public void loadExceptions(Runnable onDone) {
         MediaDataController.getInstance(currentAccount).loadHints(true);
         final ArrayList<TLRPC.TL_topPeer> topPeers = new ArrayList<>(MediaDataController.getInstance(currentAccount).hints);
