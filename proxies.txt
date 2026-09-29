@@ -1,11 +1,7 @@
-tg://proxy?server=world-mordak.maraton-co.info&port=443&secret=ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d
-tg://proxy?server=udymau.server-space52.info&port=443&secret=ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d
 tg://proxy?server=server3.server-space52.info&port=443&secret=ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d
-tg://proxy?server=ping-pong.mangom-kangom.info&port=443&secret=ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d
 tg://proxy?server=t.meow-network.com&port=443&secret=ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d
-tg://proxy?server=run.golgoli2.co.uk&port=2053&secret=eeNEgYdJvXrFGRMCIMJdCQ
-tg://proxy?server=new.lambforkebeb.co.uk&port=2096&secret=eeNEgYdJvXrFGRMCIMJdCQ
-tg://proxy?server=gallery.talebi.co.uk&port=2096&secret=eeNEgYdJvXrFGRMCIMJdCQ
-tg://proxy?server=you.foltmeingop.co.uk&port=8880&secret=eeNEgYdJvXrFGRMCIMJdCQ
-tg://proxy?server=uptime.speed-benz.co.uk&port=8443&secret=eeNEgYdJvXrFGRMCIMJdCQ
-tg://proxy?server=hadaf.golgoli2.co.uk&port=2053&secret=eeNEgYdJvXrFGRMCIMJdCQ
+tg://proxy?server=run.golgoli2.co.uk&port=2053&secret=7eNEgYdJvXrFGRMCIMJdCQ
+tg://proxy?server=new.lambforkebeb.co.uk&port=2096&secret=7eNEgYdJvXrFGRMCIMJdCQ
+tg://proxy?server=gallery.talebi.co.uk&port=2096&secret=7eNEgYdJvXrFGRMCIMJdCQ
+tg://proxy?server=you.foltmeingop.co.uk&port=8880&secret=7eNEgYdJvXrFGRMCIMJdCQ
+tg://proxy?server=hadaf.golgoli2.co.uk&port=2053&secret=7eNEgYdJvXrFGRMCIMJdCQ

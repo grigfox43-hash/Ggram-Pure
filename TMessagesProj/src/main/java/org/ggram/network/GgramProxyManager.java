@@ -2,11 +2,6 @@ package org.ggram.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -17,6 +12,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.tgnet.ConnectionsManager;
 
@@ -34,8 +30,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * GgramProxyManager - Multi-protocol proxy manager with remote dynamic GitLab sync,
- * latency benchmarking, and automatic fastest node activation.
+ * GgramProxyManager - Multi-protocol proxy manager for Ggram Pure.
+ * 
+ * Provides verified fallback MTProto nodes, background latency testing,
+ * and ensures user-selected and manual proxies are NEVER overridden or killed.
  */
 public class GgramProxyManager {
 
@@ -84,72 +82,18 @@ public class GgramProxyManager {
     }
 
     private static final List<ProxyServer> proxyList = Collections.synchronizedList(new ArrayList<>());
-    private static final ExecutorService executor = Executors.newFixedThreadPool(8);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
     private static volatile boolean isInitialized = false;
 
     private static Runnable rotateRunnable = null;
     private static int currentProxyIndex = 0;
-    private static boolean proxyWasEnabledBeforeVpn = false;
 
-    public static boolean isVpnActive(Context context) {
-        if (context == null) return false;
-        try {
-            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm == null) return false;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Network activeNetwork = cm.getActiveNetwork();
-                if (activeNetwork != null) {
-                    NetworkCapabilities caps = cm.getNetworkCapabilities(activeNetwork);
-                    if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                        return true;
-                    }
-                }
-                Network[] allNetworks = cm.getAllNetworks();
-                if (allNetworks != null) {
-                    for (Network n : allNetworks) {
-                        NetworkCapabilities caps = cm.getNetworkCapabilities(n);
-                        if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                            return true;
-                        }
-                    }
-                }
-            } else {
-                NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_VPN);
-                if (info != null && info.isConnected()) {
-                    return true;
-                }
-            }
-        } catch (Throwable e) {
-            FileLog.e(e);
-        }
-        return false;
-    }
-
+    /**
+     * Non-destructive network change listener.
+     * We deliberately NEVER disable proxy on network changes or VPN detection.
+     */
     public static void onNetworkChanged(Context context) {
-        boolean vpn = isVpnActive(context);
-        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
-
-        if (vpn) {
-            // VPN turned ON -> Disable proxy to avoid connection conflicts
-            if (proxyEnabled) {
-                Log.i(TAG, "VPN is active: auto-disabling MTProto proxy to avoid conflict");
-                proxyWasEnabledBeforeVpn = true;
-                disableProxyForTelegram();
-            }
-        } else {
-            // VPN turned OFF -> Restore proxy only if it was active before VPN
-            if (proxyWasEnabledBeforeVpn && !proxyEnabled) {
-                Log.i(TAG, "VPN is not active: restoring MTProto proxy that was active before VPN");
-                proxyWasEnabledBeforeVpn = false;
-                if (SharedConfig.currentProxy != null) {
-                    applyProxyInfoToTelegram(SharedConfig.currentProxy);
-                } else if (!proxyList.isEmpty()) {
-                    applyProxyToTelegram(proxyList.get(0));
-                }
-            }
-        }
+        // No-op: preserve user proxy settings and prevent disconnections
     }
 
     public static void init(Context context) {
@@ -157,101 +101,90 @@ public class GgramProxyManager {
         isInitialized = true;
 
         setupDefaultProxies();
-        Log.i(TAG, "GgramProxyManager initialized with " + proxyList.size() + " default anti-censorship nodes");
+        Log.i(TAG, "GgramProxyManager initialized with " + proxyList.size() + " fallback nodes");
 
-        boolean vpnActive = isVpnActive(context);
-        if (vpnActive) {
-            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-            if (preferences.getBoolean("proxy_enabled", false)) {
-                Log.i(TAG, "System VPN active at launch: disabling active proxy to avoid conflict");
-                proxyWasEnabledBeforeVpn = true;
-                disableProxyForTelegram();
-            }
-        }
-        // Direct connection by default! No forced proxy on startup.
-
-        // Sync from GitLab dynamically in background
+        // Sync from GitLab dynamically in background without modifying user's active proxy
         fetchRemoteProxies();
     }
 
     private static void setupDefaultProxies() {
         if (!proxyList.isEmpty()) return;
 
-        // Verified EU Fake-TLS (ee) and resilient MTProto nodes
-        addDefaultNode("1", "🛡️ Germany Fast (Port 443)", ProxyType.MTPROTO, "world-mordak.maraton-co.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("2", "🎮 Steam CDN Fake-TLS 1", ProxyType.MTPROTO, "udymau.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("3", "🎮 Steam CDN Fake-TLS 2", ProxyType.MTPROTO, "server3.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("4", "🎮 Steam CDN Fake-TLS 3", ProxyType.MTPROTO, "ping-pong.mangom-kangom.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
-        addDefaultNode("5", "🌐 Meow Network (Port 443)", ProxyType.MTPROTO, "t.meow-network.com", 443, "ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d");
-        addDefaultNode("6", "🛡️ Cloud EU 1 (Port 2053)", ProxyType.MTPROTO, "run.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("7", "🛡️ Cloud EU 2 (Port 2096)", ProxyType.MTPROTO, "new.lambforkebeb.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("8", "🛡️ Cloud EU 3 (Port 2096)", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("9", "🛡️ Cloud EU 4 (Port 8880)", ProxyType.MTPROTO, "you.foltmeingop.co.uk", 8880, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("10", "🛡️ Cloud EU 5 (Port 8443)", ProxyType.MTPROTO, "uptime.speed-benz.co.uk", 8443, "eeNEgYdJvXrFGRMCIMJdCQ");
-        addDefaultNode("11", "🛡️ Cloud EU 6 (Port 2053)", ProxyType.MTPROTO, "hadaf.golgoli2.co.uk", 2053, "eeNEgYdJvXrFGRMCIMJdCQ");
-    }
+        // Verified active MTProto nodes with clean secrets
+        addDefaultNode("1", "Steam CDN Fake-TLS", ProxyType.MTPROTO, "server3.server-space52.info", 443, "ee1603010200010001fc030386e24c3add6d656469612e737465616d706f77657265642e636f6d");
+        addDefaultNode("2", "Meow Network Fake-TLS", ProxyType.MTPROTO, "t.meow-network.com", 443, "ee5622e11fff3e49bcc85280197a6106b5742e6d656f772d6e6574776f726b2e636f6d");
+        addDefaultNode("3", "Cloud EU Fast 1", ProxyType.MTPROTO, "run.golgoli2.co.uk", 2053, "7eNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("4", "Cloud EU Fast 2", ProxyType.MTPROTO, "new.lambforkebeb.co.uk", 2096, "7eNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("5", "Cloud EU Fast 3", ProxyType.MTPROTO, "gallery.talebi.co.uk", 2096, "7eNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("6", "Cloud EU Fast 4", ProxyType.MTPROTO, "you.foltmeingop.co.uk", 8880, "7eNEgYdJvXrFGRMCIMJdCQ");
+        addDefaultNode("7", "Cloud EU Fast 5", ProxyType.MTPROTO, "hadaf.golgoli2.co.uk", 2053, "7eNEgYdJvXrFGRMCIMJdCQ");
 
-    public static void onConnectionState(int state) {
-        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
-
-        // Only rotate if the user has intentionally enabled proxy
-        if (!proxyEnabled) {
-            if (rotateRunnable != null) {
-                AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
-                rotateRunnable = null;
+        // ONLY inject into SharedConfig if the user currently has NO proxies saved!
+        // This ensures the user's custom proxy configuration is completely respected.
+        try {
+            SharedConfig.loadProxyList();
+            if (SharedConfig.proxyList.isEmpty()) {
+                for (ProxyServer server : proxyList) {
+                    SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(server.host, server.port, "", "", server.secret != null ? server.secret : "");
+                    SharedConfig.addProxy(info);
+                }
             }
-            return;
-        }
-
-        Context context = ApplicationLoader.applicationContext;
-        if (isVpnActive(context)) {
-            if (rotateRunnable != null) {
-                AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
-                rotateRunnable = null;
-            }
-            return;
-        }
-
-        if (state == ConnectionsManager.ConnectionStateConnected) {
-            if (rotateRunnable != null) {
-                AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
-                rotateRunnable = null;
-            }
-            return;
-        }
-
-        if (state == ConnectionsManager.ConnectionStateConnecting ||
-            state == ConnectionsManager.ConnectionStateWaitingForNetwork ||
-            state == ConnectionsManager.ConnectionStateConnectingToProxy) {
-
-            if (rotateRunnable == null) {
-                rotateRunnable = () -> {
-                    rotateRunnable = null;
-                    if (!isVpnActive(ApplicationLoader.applicationContext)) {
-                        rotateToNextProxy();
-                    }
-                };
-                AndroidUtilities.runOnUIThread(rotateRunnable, 5000);
-            }
-        }
-    }
-
-    public static synchronized void rotateToNextProxy() {
-        if (proxyList.isEmpty()) return;
-        currentProxyIndex = (currentProxyIndex + 1) % proxyList.size();
-        ProxyServer next = proxyList.get(currentProxyIndex);
-        Log.i(TAG, "Auto-failover: rotating to next proxy node: " + next.host + ":" + next.port);
-        applyProxyToTelegram(next);
+        } catch (Throwable ignore) {}
     }
 
     private static void addDefaultNode(String id, String name, ProxyType type, String host, int port, String secret) {
         ProxyServer server = new ProxyServer(id, name, type, host, port, secret);
         proxyList.add(server);
-        try {
-            SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(host, port, "", "", secret != null ? secret : "");
-            SharedConfig.addProxy(info);
-        } catch (Throwable ignore) {}
+    }
+
+    public static void onConnectionState(int state) {
+        // ONLY perform auto-rotation if the user explicitly enabled auto-proxy in Ggram Settings!
+        if (!GgramConfig.isAutoProxyEnabled) {
+            cancelRotationTimer();
+            return;
+        }
+
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        boolean proxyEnabled = preferences.getBoolean("proxy_enabled", false);
+        if (!proxyEnabled) {
+            cancelRotationTimer();
+            return;
+        }
+
+        if (state == ConnectionsManager.ConnectionStateConnected) {
+            cancelRotationTimer();
+            return;
+        }
+
+        // Only schedule rotation if stuck in ConnectingToProxy for at least 30 seconds
+        if (state == ConnectionsManager.ConnectionStateConnectingToProxy) {
+            if (rotateRunnable == null) {
+                rotateRunnable = () -> {
+                    rotateRunnable = null;
+                    if (GgramConfig.isAutoProxyEnabled) {
+                        rotateToNextProxy();
+                    }
+                };
+                AndroidUtilities.runOnUIThread(rotateRunnable, 30000);
+            }
+        } else {
+            cancelRotationTimer();
+        }
+    }
+
+    private static void cancelRotationTimer() {
+        if (rotateRunnable != null) {
+            AndroidUtilities.cancelRunOnUIThread(rotateRunnable);
+            rotateRunnable = null;
+        }
+    }
+
+    public static synchronized void rotateToNextProxy() {
+        if (SharedConfig.proxyList.isEmpty()) return;
+        currentProxyIndex = (currentProxyIndex + 1) % SharedConfig.proxyList.size();
+        SharedConfig.ProxyInfo next = SharedConfig.proxyList.get(currentProxyIndex);
+        Log.i(TAG, "Auto-failover: rotating to next proxy node: " + next.address + ":" + next.port);
+        applyProxyInfoToTelegram(next);
     }
 
     public static void fetchRemoteProxies() {
@@ -261,11 +194,6 @@ public class GgramProxyManager {
                 jsonContent = downloadUrl(GITLAB_REPO_URL);
             }
             if (TextUtils.isEmpty(jsonContent)) {
-                Log.w(TAG, "Remote proxy list unreachable, using built-in defaults");
-                SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-                if (preferences.getBoolean("proxy_enabled", false) && SharedConfig.currentProxy == null) {
-                    autoSelectFastestProxy();
-                }
                 return;
             }
 
@@ -273,7 +201,6 @@ public class GgramProxyManager {
                 JSONObject root = new JSONObject(jsonContent);
                 JSONArray array = root.optJSONArray("proxies");
                 if (array != null && array.length() > 0) {
-                    int addedCount = 0;
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject obj = array.getJSONObject(i);
                         String server = obj.optString("server", "").trim();
@@ -292,21 +219,12 @@ public class GgramProxyManager {
                             if (!exists) {
                                 ProxyServer ps = new ProxyServer("remote_" + i, name, ProxyType.MTPROTO, server, port, secret);
                                 proxyList.add(ps);
-                                SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(server, port, "", "", secret);
-                                SharedConfig.addProxy(info);
-                                addedCount++;
                             }
                         }
                     }
-                    Log.i(TAG, "Successfully synced " + addedCount + " new proxies from GitLab");
                 }
             } catch (Exception e) {
                 FileLog.e(e);
-            }
-
-            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-            if (preferences.getBoolean("proxy_enabled", false) && SharedConfig.currentProxy == null) {
-                autoSelectFastestProxy();
             }
         });
     }
@@ -393,11 +311,6 @@ public class GgramProxyManager {
 
     public static void applyProxyToTelegram(ProxyServer proxy) {
         if (proxy == null) return;
-        Context context = ApplicationLoader.applicationContext;
-        if (isVpnActive(context)) {
-            Log.i(TAG, "VPN is active, skipping proxy application to avoid conflict");
-            return;
-        }
         try {
             SharedConfig.ProxyInfo info = new SharedConfig.ProxyInfo(
                     proxy.host,
@@ -414,15 +327,11 @@ public class GgramProxyManager {
 
     public static void applyProxyInfoToTelegram(SharedConfig.ProxyInfo info) {
         if (info == null) return;
-        Context context = ApplicationLoader.applicationContext;
-        if (isVpnActive(context)) {
-            Log.i(TAG, "VPN is active, skipping proxy application to avoid conflict");
-            return;
-        }
         try {
             SharedConfig.addProxy(info);
             SharedConfig.currentProxy = info;
 
+            Context context = ApplicationLoader.applicationContext;
             if (context != null) {
                 SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                 preferences.edit()
@@ -437,6 +346,7 @@ public class GgramProxyManager {
             }
 
             ConnectionsManager.setProxySettings(true, info.address, info.port, info.username, info.password, info.secret);
+            NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.proxySettingsChanged);
             Log.i(TAG, "Proxy activated: " + info.address + ":" + info.port);
         } catch (Exception e) {
             FileLog.e(e);
@@ -453,7 +363,8 @@ public class GgramProxyManager {
                         .apply();
             }
             ConnectionsManager.setProxySettings(false, "", 1080, "", "", "");
-            Log.i(TAG, "Proxy disabled: direct VPN connection in use");
+            NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.proxySettingsChanged);
+            Log.i(TAG, "Proxy disabled");
         } catch (Exception e) {
             FileLog.e(e);
         }
