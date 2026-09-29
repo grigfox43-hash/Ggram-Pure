@@ -62,6 +62,10 @@ public class GgramSettingsActivity extends BaseFragment {
             return new Item(2, text, null, null, false);
         }
 
+        static Item action(String title, String subtitle, String key) {
+            return new Item(3, title, subtitle, key, false);
+        }
+
         static Item action(String title, String subtitle) {
             return new Item(3, title, subtitle, null, false);
         }
@@ -87,13 +91,14 @@ public class GgramSettingsActivity extends BaseFragment {
         items.add(Item.check("Скрытый просмотр историй (Stories)", "Не отображаться в списке зрителей чужих историй", "ghost_no_stories", GgramConfig.isGhostHideStoriesSeen));
         items.add(Item.info("Позволяет незаметно просматривать сообщения, каналы и истории."));
 
-        // 2. Forwarding & Text
-        items.add(Item.header("ПЕРЕСЫЛКА И ТЕКСТ"));
+        // 2. Forwarding, Text & Translation
+        items.add(Item.header("ПЕРЕСЫЛКА, ТЕКСТ И ПЕРЕВОД"));
+        items.add(Item.action("Сервис перевода", GgramConfig.getTranslatorName(), "translator_provider"));
         items.add(Item.check("Пересылка без автора", "Отправка сообщений без плашки «Переслано от...»", "fwd_no_authors", GgramConfig.isForwardNoAuthors));
         items.add(Item.check("Пересылка без подписи к медиа", "Удалять текст подписи при пересылке картинок и видео", "fwd_no_captions", GgramConfig.isForwardNoCaptions));
         items.add(Item.check("Частичное выделение текста", "Выделение и копирование любого слова или фрагмента сообщения", "partial_selection", GgramConfig.isPartialSelectionEnabled));
         items.add(Item.check("Копирование в Markdown", "Копировать форматированный текст (жирный, курсив, код, ссылки)", "copy_markdown", GgramConfig.isCopyMarkdown));
-        items.add(Item.info("Удобное управление текстом и анонимное цитирование материалов."));
+        items.add(Item.info("Выбор переводчика (Google, Telegram, Яндекс) и удобное управление текстом."));
 
         // 3. Media & Audio
         items.add(Item.header("ГОЛОСОВЫЕ, ВИДЕО И МЕДИА"));
@@ -132,7 +137,7 @@ public class GgramSettingsActivity extends BaseFragment {
         // 7. Proxy
         items.add(Item.header("СЕТЬ И ПРОКСИ"));
         items.add(Item.action("Настройки прокси Ggram", "MTProto, Shadowsocks, Socks5, V2Ray с авто-пином"));
-        items.add(Item.info("Ggram Pure v1.3.0 • Emerald Obsidian Edition"));
+        items.add(Item.info("Ggram Pure v1.4.0 • Emerald Obsidian Edition"));
     }
 
     @Override
@@ -191,11 +196,36 @@ public class GgramSettingsActivity extends BaseFragment {
                     listAdapter.notifyDataSetChanged();
                 }
             } else if (item.type == 3) { // action
-                presentFragment(new ProxyListActivity());
+                if ("translator_provider".equals(item.key)) {
+                    showTranslatorSelectDialog();
+                } else {
+                    presentFragment(new ProxyListActivity());
+                }
             }
         });
 
         return fragmentView;
+    }
+
+    private void showTranslatorSelectDialog() {
+        if (getParentActivity() == null) return;
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(getParentActivity());
+        builder.setTitle("Сервис перевода");
+        final CharSequence[] options = new CharSequence[]{
+                "Google Translate (Быстрый, глобальный)",
+                "Telegram (Официальный встроенный)",
+                "Яндекс.Переводчик (Высокое качество RU)"
+        };
+        builder.setItems(options, (dialog, which) -> {
+            GgramConfig.setTranslatorProvider(which);
+            updateRows();
+            if (listAdapter != null) {
+                listAdapter.notifyDataSetChanged();
+            }
+            dialog.dismiss();
+        });
+        builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     private class ListAdapter extends RecyclerListView.SelectionAdapter {

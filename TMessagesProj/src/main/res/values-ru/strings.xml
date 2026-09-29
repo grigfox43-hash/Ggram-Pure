@@ -263,4 +263,18 @@
     <string name="RemindTodayAt">\'Отправить сегодня в\' HH:mm</string>
     <string name="RemindDayAt">\'Отправить\' d MMM \'в\' HH:mm</string>
     <string name="RemindDayYearAt">\'Напомнить\' d MMM yyyy \'в\' HH:mm</string>
+    <string name="RoundVideoSettings">Видеосообщения</string>
+    <string name="RoundVideoGeneral">Запись</string>
+    <string name="RoundVideoUseNewRecorder">Использовать Camera2</string>
+    <string name="RoundVideoOutputResolution">Выходное разрешение</string>
+    <string name="RoundVideoCameraResolution">Разрешение камеры</string>
+    <string name="RoundVideoCameraResolutionHigh">Высокое</string>
+    <string name="RoundVideoCameraResolutionMedium">Среднее</string>
+    <string name="RoundVideoCameraResolutionLow">Низкое</string>
+    <string name="RoundVideoFrameRate">Частота кадров</string>
+    <string name="RoundVideoBitrate">Битрейт видео</string>
+    <string name="RoundVideoGeneralInfo">60 FPS используется только если обе камеры поддерживают этот режим. В противном случае используется 30 FPS.</string>
+    <string name="RoundVideoComposition">Композиция</string>
+    <string name="RoundVideoCompositionEnabled">Стилизация кружочков</string>
+    <string name="RoundVideoCompositionInfo">Отключите стилизацию, чтобы записывать квадратное видео без размытия и затемнения по краям круга.</string>
 </resources>

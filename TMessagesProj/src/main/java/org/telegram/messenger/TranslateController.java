@@ -1087,7 +1087,7 @@ public class TranslateController extends BaseController {
                 }
 
                 final String method = getMessagesController().translationsAutoEnabled;
-                if ("alternative".equals(method) || "system".equals(method)) {
+                if (org.ggram.config.GgramConfig.translatorProvider == org.ggram.config.GgramConfig.TRANSLATOR_GOOGLE || "alternative".equals(method) || "system".equals(method)) {
                     final String toLanguage = pendingTranslation1.language;
                     for (int i = 0; i < pendingTranslation1.messageIds.size(); ++i) {
                         final int id = pendingTranslation1.messageIds.get(i);
@@ -1101,6 +1101,32 @@ public class TranslateController extends BaseController {
                             } else {
                                 toggleTranslatingDialog(dialogId, false);
                                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
+                            }
+                        });
+                    }
+                    return;
+                } else if (org.ggram.config.GgramConfig.translatorProvider == org.ggram.config.GgramConfig.TRANSLATOR_YANDEX) {
+                    final String toLanguage = pendingTranslation1.language;
+                    for (int i = 0; i < pendingTranslation1.messageIds.size(); ++i) {
+                        final int id = pendingTranslation1.messageIds.get(i);
+                        final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = pendingTranslation1.callbacks.get(i);
+                        final String _text = pendingTranslation1.messageTexts.get(i).text;
+                        TranslateAlert2.yandexTranslate(_text, null, toLanguage, (result, rateLimit) -> {
+                            if (result != null) {
+                                final TLRPC.TL_textWithEntities resultWithEntities = new TLRPC.TL_textWithEntities();
+                                resultWithEntities.text = result;
+                                _callback.run(isTranscription, id, resultWithEntities, toLanguage);
+                            } else {
+                                TranslateAlert2.alternativeTranslate(_text, null, toLanguage, (result2, rateLimit2) -> {
+                                    if (result2 != null) {
+                                        final TLRPC.TL_textWithEntities resultWithEntities = new TLRPC.TL_textWithEntities();
+                                        resultWithEntities.text = result2;
+                                        _callback.run(isTranscription, id, resultWithEntities, toLanguage);
+                                    } else {
+                                        toggleTranslatingDialog(dialogId, false);
+                                        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit2 ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
+                                    }
+                                });
                             }
                         });
                     }

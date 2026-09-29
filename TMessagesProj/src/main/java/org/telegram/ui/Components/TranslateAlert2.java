@@ -50,6 +50,7 @@ import com.google.common.base.Charsets;
 //import com.google.mlkit.nl.translate.TranslatorOptions;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Emoji;
@@ -77,13 +78,17 @@ import org.telegram.ui.Cells.TextSelectionHelper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class TranslateAlert2 extends BottomSheet implements NotificationCenter.NotificationCenterDelegate {
 
@@ -314,8 +319,11 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
         }
 
         final String method = MessagesController.getInstance(currentAccount).translationsManualEnabled;
-        if ("alternative".equalsIgnoreCase(method)) {
+        if (org.ggram.config.GgramConfig.translatorProvider == org.ggram.config.GgramConfig.TRANSLATOR_GOOGLE || "alternative".equalsIgnoreCase(method)) {
             translateAlt();
+            return;
+        } else if (org.ggram.config.GgramConfig.translatorProvider == org.ggram.config.GgramConfig.TRANSLATOR_YANDEX) {
+            translateYandex();
             return;
         }/* else if ("system".equalsIgnoreCase(method)) {
             translateSystem();
@@ -490,6 +498,36 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
         });
     }
 
+    private void translateYandex() {
+        final String text = reqText == null ? "" : reqText.toString();
+        String _fromLng = fromLanguage;
+        if (_fromLng != null) {
+            _fromLng = _fromLng.split("_")[0];
+        }
+        if ("nb".equals(_fromLng)) {
+            _fromLng = "no";
+        }
+        final String fromLng = _fromLng;
+        String _toLng = toLanguage;
+        if (_toLng != null) {
+            _toLng = _toLng.split("_")[0];
+        }
+        if ("nb".equals(_toLng)) {
+            _toLng = "no";
+        }
+        final String toLng = _toLng;
+
+        yandexTranslate(text, fromLng, toLng, (res, rateLimit) -> {
+            if (res != null) {
+                firstTranslation = false;
+                textView.setText(preprocessText(res));
+                adapter.updateMainView(textViewContainer);
+            } else {
+                translateAlt();
+            }
+        });
+    }
+
     private static int lastIndexOfSafe(String text, String target, int start, int end) {
         int idx = text.lastIndexOf(target, end - 1);
         return (idx >= start) ? idx : -1;
@@ -632,6 +670,71 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
                         AndroidUtilities.runOnUIThread(() -> {
                             done.run(null, false);
                         });
+                    }
+                }
+            }
+        }.start();
+    }
+
+    public static void yandexTranslate(String text, String fromLng, String toLng, Utilities.Callback2<String, Boolean> done) {
+        new Thread() {
+            @Override
+            public void run() {
+                HttpURLConnection connection = null;
+                try {
+                    String uuid = UUID.randomUUID().toString().replace("-", "");
+                    String uri = "https://translate.yandex.net/api/v1/tr.json/translate?id=" + uuid + "-0-0&srv=android";
+                    String targetLang = toLng != null ? toLng : "ru";
+                    String langParam = (fromLng != null && !"auto".equalsIgnoreCase(fromLng) && !"und".equalsIgnoreCase(fromLng)) ? (fromLng + "-" + targetLang) : targetLang;
+
+                    connection = (HttpURLConnection) new URI(uri).toURL().openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+                    connection.setConnectTimeout(8000);
+                    connection.setReadTimeout(10000);
+                    connection.setRequestProperty("User-Agent", "ru.yandex.translate/22.11.8.22364114 (samsung SM-A505GM; Android 12)");
+                    connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+                    String postData = "lang=" + URLEncoder.encode(langParam, "UTF-8") + "&text=" + URLEncoder.encode(text, "UTF-8");
+                    byte[] postBytes = postData.getBytes(StandardCharsets.UTF_8);
+                    connection.setRequestProperty("Content-Length", String.valueOf(postBytes.length));
+                    try (OutputStream os = connection.getOutputStream()) {
+                        os.write(postBytes);
+                        os.flush();
+                    }
+
+                    if (connection.getResponseCode() == 200) {
+                        StringBuilder textBuilder = new StringBuilder();
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                textBuilder.append(line);
+                            }
+                        }
+                        JSONObject json = new JSONObject(textBuilder.toString());
+                        JSONArray arr = json.optJSONArray("text");
+                        if (arr != null && arr.length() > 0) {
+                            StringBuilder result = new StringBuilder();
+                            for (int i = 0; i < arr.length(); i++) {
+                                if (i > 0) result.append("\n");
+                                result.append(arr.getString(i));
+                            }
+                            final String finalResult = result.toString();
+                            AndroidUtilities.runOnUIThread(() -> {
+                                if (done != null) done.run(finalResult, false);
+                            });
+                            return;
+                        }
+                    }
+                    throw new IOException("HTTP code: " + connection.getResponseCode());
+                } catch (Exception e) {
+                    org.telegram.messenger.FileLog.e(e);
+                    AndroidUtilities.runOnUIThread(() -> {
+                        if (done != null) done.run(null, false);
+                    });
+                } finally {
+                    if (connection != null) {
+                        connection.disconnect();
                     }
                 }
             }

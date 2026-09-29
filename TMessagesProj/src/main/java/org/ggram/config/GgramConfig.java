@@ -38,8 +38,14 @@ public class GgramConfig {
     // Forwarding & Text
     public static boolean isForwardNoAuthors = true;
     public static boolean isForwardNoCaptions = false;
-    public static boolean isPartialSelectionEnabled = true;
+    public static boolean isPartialSelectionEnabled = false;
     public static boolean isCopyMarkdown = true;
+
+    // Translation Provider
+    public static final int TRANSLATOR_GOOGLE = 0;
+    public static final int TRANSLATOR_TELEGRAM = 1;
+    public static final int TRANSLATOR_YANDEX = 2;
+    public static int translatorProvider = TRANSLATOR_GOOGLE;
 
     // Media & Voice
     public static boolean isConfirmVoiceNotes = true;
@@ -90,8 +96,9 @@ public class GgramConfig {
 
         isForwardNoAuthors = prefs.getBoolean("fwd_no_authors", true);
         isForwardNoCaptions = prefs.getBoolean("fwd_no_captions", false);
-        isPartialSelectionEnabled = prefs.getBoolean("partial_selection", true);
+        isPartialSelectionEnabled = prefs.getBoolean("partial_selection", false);
         isCopyMarkdown = prefs.getBoolean("copy_markdown", true);
+        translatorProvider = prefs.getInt("translator_provider", TRANSLATOR_GOOGLE);
 
         isConfirmVoiceNotes = prefs.getBoolean("confirm_voice", true);
         isSaveRoundVideosAsMp4 = prefs.getBoolean("save_round_mp4", true);
@@ -116,6 +123,26 @@ public class GgramConfig {
         isAdBlockEnabled = prefs.getBoolean("adblock_enabled", true);
         isShowMetadataDetails = prefs.getBoolean("show_metadata", true);
         isHideBottomBar = prefs.getBoolean("hide_bottom_bar", false);
+    }
+
+    public static void setTranslatorProvider(int provider) {
+        translatorProvider = provider;
+        SharedPreferences prefs = getPrefs();
+        if (prefs != null) {
+            prefs.edit().putInt("translator_provider", provider).apply();
+        }
+    }
+
+    public static String getTranslatorName() {
+        switch (translatorProvider) {
+            case TRANSLATOR_TELEGRAM:
+                return "Telegram (Официальный)";
+            case TRANSLATOR_YANDEX:
+                return "Яндекс.Переводчик";
+            case TRANSLATOR_GOOGLE:
+            default:
+                return "Google Translate";
+        }
     }
 
     public static void setHideBottomBar(boolean hide) {
